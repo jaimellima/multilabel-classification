@@ -9,6 +9,7 @@ from sklearn.metrics import hamming_loss
 from sklearn.metrics import precision_score
 from sklearn.metrics import recall_score
 from sklearn.metrics import f1_score
+from sklearn.metrics import accuracy_score
 
 
 import wisardpkg as wsd
@@ -155,10 +156,12 @@ if __name__=="__main__":
         "Quantitative Biology": 4,
         "Quantitative Finance": 5
         }
-    N_SEEDS = 30
-    MAX_RAM = 16
-    MAX_TER = 16
-    SAMPLE = 1000
+    N_SEEDS = 2
+    MIN_RAM = 3
+    MAX_RAM = 100
+    MIN_TER = 3
+    MAX_TER = 100
+    SAMPLE = 10
     #carrega CSV, recebendo como parâmetro o número de amostras
     df_kaggle = load_csv(path_kaggle, n=SAMPLE)
     #concatena colunas de um dataframe
@@ -184,8 +187,8 @@ if __name__=="__main__":
         y_test = np.asarray(list(y_test))
         X_train_tfidf = X_train_tfidf.todense()
         X_test_tfidf = X_test_tfidf.todense()
-        for ram in range(3, MAX_RAM):
-            for size_ter in range(3, MAX_TER):
+        for ram in range(MIN_RAM, MAX_RAM+1):
+            for size_ter in range(MIN_TER, MAX_TER+1):
                 pred_matrix = wisard_classifier(tags_to_class, X_train_tfidf, 
                                     y_train, X_test_tfidf, 
                                     y_test, num=ram, size=size_ter)
@@ -204,7 +207,13 @@ if __name__=="__main__":
                 resultado.index = resultado.index + 1
                 resultado = resultado.sort_index()
     
-        resultado.to_csv("resultados_wisard_seed{}.csv".format(seed))
+        resultado.to_csv("resultados_wisard_ram_{}_{}_term_{}_{}_amostra_{}_seed_{}.csv".format(
+            MIN_RAM, 
+            MAX_RAM,
+            MIN_TER,
+            MAX_TER,
+            SAMPLE,
+            seed))
     
     
     
