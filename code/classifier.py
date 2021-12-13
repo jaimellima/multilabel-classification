@@ -156,12 +156,12 @@ if __name__=="__main__":
         "Quantitative Biology": 4,
         "Quantitative Finance": 5
         }
-    N_SEEDS = 2
+    N_SEEDS = 30
     MIN_RAM = 3
     MAX_RAM = 100
     MIN_TER = 3
     MAX_TER = 100
-    SAMPLE = 10
+    SAMPLE = 100
     #carrega CSV, recebendo como parâmetro o número de amostras
     df_kaggle = load_csv(path_kaggle, n=SAMPLE)
     #concatena colunas de um dataframe
