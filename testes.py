@@ -5,7 +5,6 @@ Created on Sat Dec 11 00:31:17 2021
 @author: jaimel
 """
 
-from datetime import datetime
+import pandas as pd
 
-time = datetime.now()
-time = int(time.strftime('%Y%m%d%H%M%S'))
+dados0 = pd.read_csv("G:/Meu Drive/Doutorado/experimentos/Classificacao_Multilabel_Documentos_Cientificos/multilabel_coding/code/20211214165512_resultados_wisard_ram_3_5_term_3_5_amostra_10.csv")

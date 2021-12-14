@@ -271,14 +271,13 @@ if __name__=="__main__":
                 resultado.index = resultado.index + 1
                 resultado = resultado.sort_index()
         
-                outname = "{}_resultados_wisard_ram_{}_{}_term_{}_{}_amostra_{}_seed_{}.csv".format(
+                outname = "{}_resultados_wisard_ram_{}_{}_term_{}_{}_amostra_{}.csv".format(
                     experiment,
                     min_ram, 
                     max_ram,
                     min_ter,
                     max_ter,
-                    n_sample,
-                    seed)
+                    n_sample)
    
 
                 resultado.to_csv(outname)
