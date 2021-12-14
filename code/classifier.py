@@ -10,6 +10,7 @@ from sklearn.metrics import precision_score
 from sklearn.metrics import recall_score
 from sklearn.metrics import f1_score
 from sklearn.metrics import accuracy_score
+import argparse
 
 
 import wisardpkg as wsd
@@ -148,7 +149,7 @@ def wisard_classifier(tags_to_class, X_train_tfidf, y_train, X_test_tfidf, y_tes
 
     
 if __name__=="__main__":
-    path_kaggle = "../dataset/kaggle_dataset.csv"
+    
     tags_to_class = {"Computer Science": 0,
         "Physics": 1,
         "Mathematics": 2,
@@ -156,14 +157,73 @@ if __name__=="__main__":
         "Quantitative Biology": 4,
         "Quantitative Finance": 5
         }
-    N_SEEDS = 30
-    MIN_RAM = 3
-    MAX_RAM = 100
-    MIN_TER = 3
-    MAX_TER = 100
-    SAMPLE = 100
+    
+    parser = argparse.ArgumentParser(description = 'WISARD weightless neural network based multilabel classifier')
+    parser.add_argument('--file', 
+                    action='store', 
+                    dest='file', 
+                    default='./dataset.csv', 
+                    required=True, 
+                    help='A valid dataset (.csv) must be entered.')
+    parser.add_argument('--n_iter', 
+                    action='store', 
+                    dest='n_iter', 
+                    default=1,
+                    type=int,
+                    required=False, 
+                    help='Number of iterations/repetitions for the informed hyperparameters.')
+    parser.add_argument('--min_ram', 
+                    action='store', 
+                    dest='min_ram', 
+                    default=3,
+                    type=int,
+                    required=False, 
+                    help='Minimum value for RAM. Default WISARD RAM = 3.')
+    
+    parser.add_argument('--max_ram', 
+                    action='store', 
+                    dest='max_ram', 
+                    default=4, 
+                    type=int,
+                    required=True, 
+                    help='Maximum value for RAM. Default WISARD RAM = 4.')
+    
+    parser.add_argument('--max_ter', 
+                    action='store', 
+                    dest='max_ter', 
+                    default=3, 
+                    type=int,
+                    required=False, 
+                    help='Maximum value for thermometer. Default value = 3.')
+    
+    parser.add_argument('--min_ter', 
+                    action='store', 
+                    dest='min_ter', 
+                    default=4,
+                    type=int,
+                    required=True, 
+                    help='Maximum value for thermometer. Default value = 4.')
+    
+    parser.add_argument('--n_sample', 
+                    action='store', 
+                    dest='n_sample', 
+                    default=10,
+                    type=int,
+                    required=True, 
+                    help='Number of samples to be used for training and testing.')
+    
+    arguments = parser.parse_args()
+    path_kaggle = "../dataset/kaggle_dataset.csv"
+    file = arguments.file
+    n_iter = arguments.n_iter
+    min_ram = arguments.min_ram
+    max_ram = arguments.max_ram
+    min_ter = arguments.min_ter
+    max_ter = arguments.max_ter
+    n_sample = arguments.n_sample
     #carrega CSV, recebendo como parâmetro o número de amostras
-    df_kaggle = load_csv(path_kaggle, n=SAMPLE)
+    #df_kaggle = load_csv(path_kaggle, n=SAMPLE)
+    df_kaggle = load_csv(file, n=n_sample)
     #concatena colunas de um dataframe
     df_kaggle = concat_columns(df_kaggle, ["TITLE","ABSTRACT"], "text")
     df_kaggle = zip_columns_kaggle(df_kaggle)
@@ -173,7 +233,7 @@ if __name__=="__main__":
     
         
     resultado = pd.DataFrame(columns=["SEED", "RAM", "TERM", "HAM_LOS", "PREC", "REC", "F1"])
-    for seed in range(0, N_SEEDS):
+    for seed in range(0, n_iter):
         print("Caculado experimentos para seed: {}".format(seed))
         X_train, X_test, y_train, y_test = split(df_kaggle, "text", "all_tags", random_state=seed)    
         X_train_tfidf, X_test_tfidf = tf_idf_vectorization(df_kaggle, 
@@ -187,8 +247,8 @@ if __name__=="__main__":
         y_test = np.asarray(list(y_test))
         X_train_tfidf = X_train_tfidf.todense()
         X_test_tfidf = X_test_tfidf.todense()
-        for ram in range(MIN_RAM, MAX_RAM+1):
-            for size_ter in range(MIN_TER, MAX_TER+1):
+        for ram in range(min_ram, max_ram+1):
+            for size_ter in range(min_ter, max_ter+1):
                 pred_matrix = wisard_classifier(tags_to_class, X_train_tfidf, 
                                     y_train, X_test_tfidf, 
                                     y_test, num=ram, size=size_ter)
@@ -208,11 +268,11 @@ if __name__=="__main__":
                 resultado = resultado.sort_index()
     
         resultado.to_csv("resultados_wisard_ram_{}_{}_term_{}_{}_amostra_{}_seed_{}.csv".format(
-            MIN_RAM, 
-            MAX_RAM,
-            MIN_TER,
-            MAX_TER,
-            SAMPLE,
+            min_ram, 
+            max_ram,
+            min_ter,
+            max_ter,
+            n_sample,
             seed))
     
     
