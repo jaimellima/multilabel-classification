@@ -5,16 +5,7 @@ Created on Sat Dec 11 00:31:17 2021
 @author: jaimel
 """
 
-import argparse
-parser = argparse.ArgumentParser(description = 'Um programa de exemplo.')
+from datetime import datetime
 
-parser.add_argument('--frase', 
-                    action='store', 
-                    dest='frase', 
-                    default='hello world', 
-                    required=True, 
-                    help='informe a frase!')
-
-arguments = parser.parse_args()
-
-print(arguments.frase)
+time = datetime.now()
+time = int(time.strftime('%Y%m%d%H%M%S'))

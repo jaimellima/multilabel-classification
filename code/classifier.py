@@ -11,8 +11,8 @@ from sklearn.metrics import recall_score
 from sklearn.metrics import f1_score
 from sklearn.metrics import accuracy_score
 import argparse
-
-
+import datetime 
+import os
 import wisardpkg as wsd
 
 import spacy
@@ -232,23 +232,27 @@ if __name__=="__main__":
     df_kaggle = lemmatization(df_kaggle, "text", "text_lemma", nlp)
     
         
-    resultado = pd.DataFrame(columns=["SEED", "RAM", "TERM", "HAM_LOS", "PREC", "REC", "F1"])
-    for seed in range(0, n_iter):
-        print("Caculado experimentos para seed: {}".format(seed))
-        X_train, X_test, y_train, y_test = split(df_kaggle, "text", "all_tags", random_state=seed)    
-        X_train_tfidf, X_test_tfidf = tf_idf_vectorization(df_kaggle, 
-                                                           "text_lemma", 
-                                                           X_train, 
-                                                           X_test, 
-                                                           max_features=5000,
-                                                           max_df=0.85)
-        
-        y_train = np.asarray(list(y_train))
-        y_test = np.asarray(list(y_test))
-        X_train_tfidf = X_train_tfidf.todense()
-        X_test_tfidf = X_test_tfidf.todense()
-        for ram in range(min_ram, max_ram+1):
-            for size_ter in range(min_ter, max_ter+1):
+    resultado = pd.DataFrame(columns=["EXPERIMENT", "SEED", "RAM", "TERM", "HAM_LOS", "PREC", "REC", "F1"])
+    experiment = datetime.datetime.now()
+    experiment = int(experiment.strftime('%Y%m%d%H%M%S'))
+    for ram in range(min_ram, max_ram+1):
+        for size_ter in range(min_ter, max_ter+1):
+            for seed in range(0, n_iter):
+                print("Caculado experimentos para seed: {}".format(seed))
+                X_train, X_test, y_train, y_test = split(df_kaggle, "text", "all_tags", random_state=seed)    
+                X_train_tfidf, X_test_tfidf = tf_idf_vectorization(df_kaggle, 
+                                                                   "text_lemma", 
+                                                                   X_train, 
+                                                                   X_test, 
+                                                                   max_features=5000,
+                                                                   max_df=0.85)
+                
+                y_train = np.asarray(list(y_train))
+                y_test = np.asarray(list(y_test))
+                X_train_tfidf = X_train_tfidf.todense()
+                X_test_tfidf = X_test_tfidf.todense()
+                
+                    
                 pred_matrix = wisard_classifier(tags_to_class, X_train_tfidf, 
                                     y_train, X_test_tfidf, 
                                     y_test, num=ram, size=size_ter)
@@ -263,17 +267,21 @@ if __name__=="__main__":
                 print(seed)
                 print(ram)
                 print(size_ter)
-                resultado.loc[-1] = [seed, ram, size_ter, hl_result, p_result, r_result, f_result]
+                resultado.loc[-1] = [experiment, seed, ram, size_ter, hl_result, p_result, r_result, f_result]
                 resultado.index = resultado.index + 1
                 resultado = resultado.sort_index()
-    
-        resultado.to_csv("resultados_wisard_ram_{}_{}_term_{}_{}_amostra_{}_seed_{}.csv".format(
-            min_ram, 
-            max_ram,
-            min_ter,
-            max_ter,
-            n_sample,
-            seed))
+        
+                outname = "{}_resultados_wisard_ram_{}_{}_term_{}_{}_amostra_{}_seed_{}.csv".format(
+                    experiment,
+                    min_ram, 
+                    max_ram,
+                    min_ter,
+                    max_ter,
+                    n_sample,
+                    seed)
+   
+
+                resultado.to_csv(outname)
     
     
     
