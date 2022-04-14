@@ -80,16 +80,16 @@ def doc2vec_spacy(dataframe, nlp_model):
         labels.append(row['all_tags'])
     return vectors, labels
 
-def docvec_to_txt(fname, vectors):
-    f = open(fname, "w")
-    for vector in vectors:
-        f.write(str(vector) + "\n")
-    f.close()
+def docvec_to_csv(fname, vectors, labels):
+    dataframe = pd.DataFrame({"vector": vectors, "labels": labels})
+    dataframe.to_csv(fname, index=False)
+    #f = open(fname, "w")
+    #for vector in vectors:
+    #    f.write(str(vector) + "\n")
+    #f.close()
 
 def main():  
     parser = argparse.ArgumentParser(description = 'WISARD weightless neural network preprocessor')
-    
-        
     parser.add_argument('--file', 
                     action='store', 
                     dest='file', 
@@ -105,35 +105,20 @@ def main():
                     required=True, 
                     help='Number of samples to be used for training and testing.')
     arguments = parser.parse_args()
-    
     file = arguments.file
     n_sample = arguments.n_sample
-    
-    
     nlp = spacy.load("en_core_web_sm")
-    
     df_kaggle = load_csv(file, n=n_sample)
     df_kaggle = concat_columns(df_kaggle, ["TITLE","ABSTRACT"], "text")
     df_kaggle = zip_columns_kaggle(df_kaggle)
     df_kaggle = transform(df_kaggle, "text")
     nlp = spacy.load("en_core_web_sm")
-    df_kaggle = lemmatization(df_kaggle, "text", "text_lemma", nlp)
-    
-    
+    df_kaggle = lemmatization(df_kaggle, "text", "text_lemma", nlp) 
     #model = gensim_api.load("word2vec-google-news-300")
     #documents = [TaggedDocument(doc, [i]) for i, doc in enumerate(df_kaggle["text_lemma"])]
     #model = Word2Vec(sentences=documents, vector_size=100, window=5, min_count=1, workers=4)
-    
-    vectors, labels = doc2vec_spacy(df_kaggle, nlp)
-    
-    #TODO: Salvar matriz com os vetores e labels
-    docvec_to_txt("vectors_doc2vec_spacy.txt", vectors)
-    
-    
-    #TODO: Salvar vetor com as labels
-
-    #recebe uma lista de tokens do documento e retorna 
-
+    vectors, labels = doc2vec_spacy(df_kaggle, nlp)   
+    docvec_to_csv("vectors_doc2vec_spacy", vectors, labels)
     
 if __name__=="__main__":
     main()
