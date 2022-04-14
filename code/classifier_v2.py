@@ -18,65 +18,6 @@ import wisardpkg as wsd
 import spacy
 from spacy.lang.en.stop_words import STOP_WORDS
                  
-#Função passada para arquivo de preprocessamento
-#def load_csv(path, n=100):
-#    df = pd.read_csv(path)
-#    return df.sample(n=n)
-
-
-#def concat_columns(dataframe, columns, new_column):
-#    #Função passada para arquivo de preprocessamento
-#    #INPUT: dataframe, columns:list of str, new_column: str
-#    #CONCATENA OS TEXTOS DAS COLUNAS PASSADAS COMO PARÂMENTROS
-#    #OUTPUT: dataframe[new_column]
-#    dataframe[new_column] = ""
-#    for column in columns:
-#        dataframe[new_column] = dataframe[new_column] + " " + dataframe[column]
-#    return dataframe
-
-#def transform(dataframe, column):
-#    dataframe[column] = dataframe[column].str.lower()
-#    dataframe[column] = dataframe[column].str.replace('\W',' ')
-#    return dataframe
-    
-#def zip_columns_kaggle(dataframe):
-#    lista_zip_tags = list(zip(dataframe["Computer Science"],
-#                     dataframe["Physics"],
-#                     dataframe["Mathematics"],
-#                     dataframe["Statistics"],
-#                     dataframe["Quantitative Biology"],
-#                     dataframe["Quantitative Finance"]))
-#    dataframe["all_tags"] = lista_zip_tags
-#    return dataframe
-    
-#def lemmatization(dataframe, column_to_lemma, new_column, nlp):
-#    dataframe[new_column] = ""
-#    for index, row in dataframe.iterrows():
-#        doc = nlp(row[column_to_lemma])
-#        words = list()
-#        text_to_insert = ""
-#        for token in doc:
-#            if not token.is_stop:
-#                words.append(token.lemma_)
-#                text_to_insert = " ".join(words) 
-#        dataframe.loc[index, new_column] = text_to_insert
-#   return dataframe
-
-#def tf_idf_vectorization(dataframe, column_to_fit, X_train, y_train, max_features=5000, max_df=0.85):
-#    vetorizer = TfidfVectorizer(max_features=max_features, max_df=max_df)
-#    vetorizer.fit(dataframe[column_to_fit])
-#    X_train_tfidf = vetorizer.transform(X_train)
-#    X_test_tfidf = vetorizer.transform(X_test)
-#    return X_train_tfidf, X_test_tfidf
-    
-
-#def split(dataframe, X_cols, y_cols, test_size=0.33, random_state=123):
-#    X_train, X_test, y_train, y_test = train_test_split(
-#    dataframe[X_cols],
-#    dataframe[y_cols],
-#    test_size = test_size,
-#    random_state = random_state)
-#    return X_train, X_test, y_train, y_test
 
 def thermometerEncoder(X, size, min=0, max=1):
     X = np.asarray(X)
