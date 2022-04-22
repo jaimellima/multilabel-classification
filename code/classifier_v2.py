@@ -85,15 +85,15 @@ def prepare_dataset_word2vec(dataframe, column_to_bin, column_dest_name, tags, t
         dataframe.loc[index, column_dest_name] = vector_str
     dataframe.to_csv(file_name)
 
-def prepare_dataset_tfidf(dataframe, column_dest_name, file_name):
+def prepare_dataset_tfidf(dataframe, column_dest_name, term_size, file_name):
     row_len = dataframe.shape[1] - 1
-    
+    print("Tamanho da linha!{}".format(row_len))
     vectors_bin = []
     
     for index, row in dataframe.iterrows():
         vector = dataframe.iloc[index,0:row_len].values
         vector = vector.astype(float)
-        vector_bin = flatten(thermometerEncoder(vector, 8, min(vector), max(vector)))    
+        vector_bin = flatten(thermometerEncoder(vector, term_size, min(vector), max(vector)))    
         vectors_bin.append(vector_bin)
         vector_str = ' '.join(str(i) for i in vector_bin)
         dataframe.loc[index, column_dest_name] = [vector_str]
@@ -212,7 +212,35 @@ def wsd_w2v_experiment(tags, dataset, min_ter, max_ter, n_iter, min_ram, max_ram
                 acc, hl = wisard_label_powerset(X_train, y_train, X_test, y_test, ram)
                 wisard_binary_relevance(tags_to_class, X_train, y_train, X_test, y_test, ram)
             
-
+def wsd_tfidf_experiment(dataset, min_ter, max_ter, n_iter, min_ram, max_ram):
+    for thermometer in range(min_ter, max_ter+1):
+        fname_tfidf = "df_binary_tfidf.csv"
+        print("TF-IDF - Thermometer Parameter: {}".format(thermometer))
+        prepare_dataset_tfidf(dataset, "binary", thermometer, fname_tfidf)
+        dataset_bin = load_csv(fname_tfidf)
+        X = []
+        y = []
+        X_temp = dataset_bin["binary"]
+        y_temp = dataset_bin["labels"]
+        for item in X_temp:
+            vec = item.split()
+            vec = [int(i) for i in vec]
+            X.append(vec)
+        for item in y_temp:
+            item = item.replace("(", "")
+            item = item.replace(")", "")
+            labels = item.split(",")
+            labels = "".join([str(i) for i in labels])
+            y.append(labels)
+        #for label in y:
+        #    print(label)
+        for iteration in range(0, n_iter):
+            X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.33, random_state=iteration)
+            for ram in range(min_ram, max_ram+1):
+                print("TF-IDF - RAM Parameter: {}".format(ram))
+                acc, hl = wisard_label_powerset(X_train, y_train, X_test, y_test, ram)
+                wisard_binary_relevance(tags_to_class, X_train, y_train, X_test, y_test, ram)
+                
 if __name__=="__main__":
     
     #criar json com as classes
@@ -222,7 +250,7 @@ if __name__=="__main__":
         "Statistics": 3,
         "Quantitative Biology": 4,
         "Quantitative Finance": 5
-        }
+        } 
     
      
     parser = argparse.ArgumentParser(description = 'WISARD weightless neural network based multilabel classifier')
@@ -230,7 +258,7 @@ if __name__=="__main__":
                     action='store', 
                     dest='file', 
                     default='./dataset.csv', 
-                    required=True, 
+                    required=True,
                     help='A valid dataset (.csv) must be entered.')
     parser.add_argument('--n_iter', 
                     action='store', 
@@ -310,7 +338,10 @@ if __name__=="__main__":
     #df_kaggle = load_csv(path_kaggle, n=SAMPLE)
     dataset = load_csv(file)
     dataset = get_sample(dataset, n_sample)
-    wsd_w2v_experiment(tags_to_class, dataset, min_ter, max_ter, n_iter, min_ram, max_ram)
+    if preprocess == 0:
+        wsd_tfidf_experiment(dataset, min_ter, max_ter, n_iter, min_ram, max_ram)
+    else:
+        wsd_w2v_experiment(tags_to_class, dataset, min_ter, max_ter, n_iter, min_ram, max_ram)
 
     
 

@@ -15,3 +15,6 @@ experimento_wisard_doc2vec_pws:
 	
 experimento_wisard_doc2vec_br:
 	python3 classifier_v2.py --file /home/jolima/Documentos/multilabel-classification/code/vectors_doc2vec_spacy.csv --n_iter 3 --min_ram 32 --max_ram 32 --min_ter 32 --max_ter 32 --n_sample 1000 --preprocess 1 --method 1
+	
+experimento_wisard_tfidf_br:
+	python3 classifier_v2.py --file /home/jolima/Documentos/multilabel-classification/code/vectors_doc2vec_spacy.csv --n_iter 3 --min_ram 32 --max_ram 32 --min_ter 32 --max_ter 32 --n_sample 5 --preprocess 0 --method 1
