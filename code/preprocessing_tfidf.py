@@ -63,9 +63,13 @@ def lemmatization(dataframe, column_to_lemma, new_column, nlp):
 
 def tf_idf_vectorization(dataframe, column_to_fit, max_features=5000, max_df=0.85):
     print("Getting TF-IDF...")
+    print("Resetting indexes...")
+    dataframe = dataframe.reset_index()
     vetorizer = TfidfVectorizer(max_features=max_features, max_df=max_df)
     X_tfidf = vetorizer.fit_transform(dataframe[column_to_fit])
-    return X_tfidf
+    df_tfidf = pd.DataFrame(X_tfidf.todense())
+    df_tfidf["all_tags"] = dataframe["all_tags"]
+    return df_tfidf
 
 def save_sparse_csr(filename, array):
     np.savez(filename, data=array.data, indices=array.indices,
@@ -125,12 +129,14 @@ def main():
     df_kaggle = transform(df_kaggle, "text")
     nlp = spacy.load("en_core_web_sm")
     df_kaggle = lemmatization(df_kaggle, "text", "text_lemma", nlp)
-    X_tfidf = tf_idf_vectorization(df_kaggle, 
+    df_tfidf = tf_idf_vectorization(df_kaggle, 
                                    "text_lemma", 
                                    max_features=5000,
                                    max_df=0.85)
-    file_tfidf_name = "tf_idf_matrix"
-    save_sparse_csr(file_tfidf_name, X_tfidf)
+    #file_tfidf_name = "tf_idf_matrix"
+    #save_sparse_csr(file_tfidf_name, X_tfidf)
+    #df_tfidf = pd.DataFrame(X_tfidf.todense())
+    df_tfidf.to_csv("vectors_tfidf.csv", index=False)
     print("TF-IDF DONE!!!...")   
 
 if __name__=="__main__":

@@ -5,4 +5,13 @@ preprocessamento_tfidf:
 	python3 preprocessing_tfidf.py --file /home/jolima/Documentos/multilabel-classification/dataset/kaggle_dataset.csv --n_sample 10
 	
 preprocessamento_doc2vec:
-	python3 preprocessing_doc2vec.py --file /home/jolima/Documentos/multilabel-classification/dataset/kaggle_dataset.csv --n_sample 5
+	python3 preprocessing_doc2vec.py --file /home/jolima/Documentos/multilabel-classification/dataset/kaggle_dataset.csv --n_sample 2000
+	
+binarizacao_doc2vec:
+	python3 binarization.py --file /home/jolima/Documentos/multilabel-classification/code/vectors_doc2vec_spacy --term_size 8
+	
+experimento_wisard_doc2vec_pws:
+	python3 classifier_v2.py --file /home/jolima/Documentos/multilabel-classification/code/vectors_doc2vec_spacy.csv --n_iter 3 --min_ram 24 --max_ram 36 --min_ter 16 --max_ter 24 --n_sample 1000 --preprocess 1 --method 0
+	
+experimento_wisard_doc2vec_br:
+	python3 classifier_v2.py --file /home/jolima/Documentos/multilabel-classification/code/vectors_doc2vec_spacy.csv --n_iter 3 --min_ram 32 --max_ram 32 --min_ter 32 --max_ter 32 --n_sample 1000 --preprocess 1 --method 1

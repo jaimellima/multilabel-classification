@@ -118,7 +118,7 @@ def main():
     #documents = [TaggedDocument(doc, [i]) for i, doc in enumerate(df_kaggle["text_lemma"])]
     #model = Word2Vec(sentences=documents, vector_size=100, window=5, min_count=1, workers=4)
     vectors, labels = doc2vec_spacy(df_kaggle, nlp)   
-    docvec_to_csv("vectors_doc2vec_spacy", vectors, labels)
+    docvec_to_csv("vectors_doc2vec_spacy.csv", vectors, labels)
     
 if __name__=="__main__":
     main()

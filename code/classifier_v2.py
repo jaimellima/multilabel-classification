@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 from sklearn.model_selection import train_test_split
+from sklearn.model_selection import KFold
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.multiclass import OneVsRestClassifier
 from sklearn.linear_model import LogisticRegression
@@ -15,9 +16,16 @@ import datetime
 import os
 import wisardpkg as wsd
 
+
 import spacy
 from spacy.lang.en.stop_words import STOP_WORDS
                  
+def load_csv(path):
+    df = pd.read_csv(path)
+    return df
+
+def get_sample(df, n=100):
+    return df.sample(n=n)
 
 def thermometerEncoder(X, size, min=0, max=1):
     X = np.asarray(X)
@@ -32,12 +40,10 @@ def thermometerEncoder(X, size, min=0, max=1):
 def flatten(X, column_major=True):
     X = np.asarray(X)
     order = 'F' if column_major else 'C'
-
     if X.ndim < 2:
         return X
     elif X.ndim == 2:
         return X.ravel(order=order)
-
     return np.asarray([X[:, :, i].ravel(order=order) for i in range(X.shape[2])])
 
 def log_reg_one_vs_rest(X_train_tfidf, X_test_tfidf, y_train, y_test):
@@ -62,36 +68,151 @@ def svm_one_vs_rest(X_train_tfidf, X_test_tfidf, y_train, y_test):
     print("Hamming Loss SVM: {}".format(hl_result))
     return y_pred
     
-def wisard(X_train_tfidf_bin, y_train, X_test_tfidf_bin, y_test, num):
-    wisard = wsd.Wisard(num, ignoreZero=False)
-    wisard.train(X_train_tfidf_bin, y_train)
-    y_pred = np.array(wisard.classify(X_test_tfidf_bin))
-    return y_pred
+def prepare_dataset_word2vec(dataframe, column_to_bin, column_dest_name, tags, term_size, file_name):
+    for index, row in dataframe.iterrows():
+        vector = row[column_to_bin]
+        vector = vector.replace("[", "")
+        vector = vector.replace("]", "")
+        vector = vector.replace("\n", "")
+        vector = vector.split()
+        vector = np.array(vector)
+        vector = vector.astype(float)
+        vector_bin = flatten(thermometerEncoder(vector, term_size, min(vector), max(vector)))
+        #vector_bin = flatten(thermometerEncoder(vector, term_size, 0, max(vector)))
+        print("Min.: {} Max.: {}".format(min(vector), max(vector)))
+        print("Binary vector size: {}".format(len(vector_bin)))
+        vector_str = ' '.join(str(i) for i in vector_bin)
+        dataframe.loc[index, column_dest_name] = vector_str
+    dataframe.to_csv(file_name)
 
-def wisard_classifier(tags_to_class, X_train_tfidf, y_train, X_test_tfidf, y_test, num, size):
-    X_train_tfidf_bin = flatten(thermometerEncoder(X_train_tfidf, 
-                                                   min = np.min(X_train_tfidf), 
-                                                   max=np.max(X_train_tfidf), size=size))
-    X_test_tfidf_bin = flatten(thermometerEncoder(X_test_tfidf, 
-                                                   min = np.min(X_test_tfidf), 
-                                                   max=np.max(X_test_tfidf), size=size))
+def prepare_dataset_tfidf(dataframe, column_dest_name, file_name):
+    row_len = dataframe.shape[1] - 1
     
-    pred_matrix = list()
-    for tag in tags_to_class:
-        #print("Training WISARD for {}".format(tag))
-        y_train_ = y_train[:,tags_to_class[tag]].astype(str)
-        y_test_ = y_test[:,tags_to_class[tag]].astype(str)
-        y_pred =  wisard(X_train_tfidf_bin, y_train_, X_test_tfidf_bin, y_test_, num=num)
-        pred_matrix.append(y_pred)
-    pred_matrix = np.array(pred_matrix)
-    pred_matrix = pred_matrix.astype(np.int32)
-    pred_matrix = pred_matrix.T
-    hl_result = hamming_loss(y_test, pred_matrix)
-    print("Hamming Loss WSD RAM {}-TERM {}: {}".format(num, size, hl_result))
-    return pred_matrix
-
-
+    vectors_bin = []
     
+    for index, row in dataframe.iterrows():
+        vector = dataframe.iloc[index,0:row_len].values
+        vector = vector.astype(float)
+        vector_bin = flatten(thermometerEncoder(vector, 8, min(vector), max(vector)))    
+        vectors_bin.append(vector_bin)
+        vector_str = ' '.join(str(i) for i in vector_bin)
+        dataframe.loc[index, column_dest_name] = [vector_str]
+    dataframe.to_csv(file_name)
+        
+def get_y_matrix(y_test, y_pred):
+    y_test_matrix = []
+    for item in y_test:
+        x = item.split()
+        y_test_matrix.append(x)
+    y_pred_matrix = []
+    for item in y_pred:
+        x = item.split()
+        y_pred_matrix.append(x)
+    y_test_matrix = np.array(y_test_matrix)
+    y_pred_matrix = np.array(y_pred_matrix)
+    y_test_matrix = y_test_matrix.astype(int)
+    y_pred_matrix = y_pred_matrix.astype(int)
+    return y_test_matrix, y_pred_matrix
+    
+def wisard_label_powerset(X_train, y_train, X_test, y_test, ram):
+    wisard = wsd.Wisard(ram, ignoreZero=False)
+    wisard.train(X_train, y_train)
+    y_pred = np.array(wisard.classify(X_test))
+    print("Predictions - ")
+    print("Total of predictions: {}".format(len(y_pred)))
+    acc = accuracy_score(y_test, y_pred)
+    print("Label Powerset - Accuracy: {}".format(acc))
+    y_test_matrix, y_pred_matrix = get_y_matrix(y_test, y_pred)
+    hl = hamming_loss(y_test_matrix, y_pred_matrix)
+    print("Label Powerset - Hamming Loss: {}".format(hl))
+    print()
+    return acc, hl
+
+def wisard_binary_relevance(tags, X_train, y_train, X_test, y_test, ram):
+    labels_train = []
+    for item in y_train:
+        item_temp = np.array(item.split())
+        labels_train.append(item_temp)
+    labels_train = np.array(labels_train)
+    labels_train = labels_train.T
+    
+    labels_test = []
+    for item in y_test:
+        item_temp = np.array(item.split())
+        labels_test.append(item_temp)
+    labels_test = np.array(labels_test)
+    labels_test = labels_test.T
+    
+    acc = []
+    hl = []
+    
+    for tag in tags:
+        print("Training and Testing Wisard for {}".format(tag))
+        wisard = wsd.Wisard(ram, ignoreZero=False)
+        wisard.train(X_train, labels_train[tags[tag]])
+        y_pred = np.array(wisard.classify(X_test))
+    
+        acc.append(accuracy_score(labels_test[tags[tag]], y_pred))
+        hl.append(hamming_loss(labels_test[tags[tag]], y_pred))
+    acc_mean = np.mean(acc)
+    hl_mean = np.mean(hl)
+    print("Binary Relevance (Avg) - Accuracy: {}".format(acc_mean))
+    print("Binary Relevance (Avg) - Hamming Loss: {}".format(hl_mean))
+    print()
+    
+    #labels_train = []
+    #for tag in tags:
+    #    y_train_new = []
+    #    for item in y_train:
+    #        y_train_temp = item.split()
+    #        y_train_new.append(y_train_temp[tags[tag]])
+    #    labels_train.append(y_train_new)
+    #labels_test = []
+    #for tag in tags:
+    #    y_test_new = []
+    #    for item in y_test:
+    #        y_test_temp = item.split()
+    #        y_test_new.append(y_test_temp[tags[tag]])
+    #    labels_test.append(y_test_new)
+    #wisard = wsd.Wisard(ram, ignoreZero=False)
+    #wisard.train(X_train, y_train_new[0])
+    #y_pred = np.array(wisard.classify(X_test))
+    #print(y_pred)
+    
+    #for tag in tags:
+    #    labels_bin.append(y_train[])
+        
+    
+def wsd_w2v_experiment(tags, dataset, min_ter, max_ter, n_iter, min_ram, max_ram):
+    for thermometer in range(min_ter, max_ter+1):
+        fname_w2v = "df_binary_w2v.csv"
+        print("Thermometer Parameter: {}".format(thermometer))
+        prepare_dataset_word2vec(dataset, "vector", "binary", tags, thermometer, fname_w2v)
+        dataset_bin = load_csv(fname_w2v)
+        X = []
+        y = []
+        X_temp = dataset_bin["binary"]
+        y_temp = dataset_bin["labels"]
+        for item in X_temp:
+            vec = item.split()
+            vec = [int(i) for i in vec]
+            X.append(vec)
+        for item in y_temp:
+            item = item.replace("(", "")
+            item = item.replace(")", "")
+            labels = item.split(",")
+            labels = "".join([str(i) for i in labels])
+            y.append(labels)
+        #for label in y:
+        #    print(label)
+        for iteration in range(0, n_iter):
+            X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.33, random_state=iteration)
+            for ram in range(min_ram, max_ram+1):
+                print("RAM Parameter: {}".format(ram))
+                acc, hl = wisard_label_powerset(X_train, y_train, X_test, y_test, ram)
+                wisard_binary_relevance(tags_to_class, X_train, y_train, X_test, y_test, ram)
+            
+
 if __name__=="__main__":
     
     #criar json com as classes
@@ -157,6 +278,22 @@ if __name__=="__main__":
                     type=int,
                     required=True, 
                     help='Number of samples to be used for training and testing.')
+
+    parser.add_argument('--preprocess', 
+                    action='store', 
+                    dest='preprocess', 
+                    default=0,
+                    type=int,
+                    required=True, 
+                    help='0: TF-IDF. 1: Doc2Vec Spacy')
+    
+    parser.add_argument('--method', 
+                    action='store', 
+                    dest='method', 
+                    default=0,
+                    type=int,
+                    required=True, 
+                    help='0: Label Powerset. 1: Binary Relevance')
     
     arguments = parser.parse_args()
     path_kaggle = "../dataset/kaggle_dataset.csv"
@@ -167,85 +304,35 @@ if __name__=="__main__":
     min_ter = arguments.min_ter
     max_ter = arguments.max_ter
     n_sample = arguments.n_sample
+    preprocess = arguments.preprocess
+    method = arguments.method
     #carrega CSV, recebendo como parâmetro o número de amostras
     #df_kaggle = load_csv(path_kaggle, n=SAMPLE)
-    df_kaggle = load_csv(file, n=n_sample)
+    dataset = load_csv(file)
+    dataset = get_sample(dataset, n_sample)
+    wsd_w2v_experiment(tags_to_class, dataset, min_ter, max_ter, n_iter, min_ram, max_ram)
+
+    
+
+
+            
+    
+    
+
+    
+
+        
+
+        
+       
+    
     #concatena colunas de um dataframe
-    df_kaggle = concat_columns(df_kaggle, ["TITLE","ABSTRACT"], "text")
-    df_kaggle = zip_columns_kaggle(df_kaggle)
-    df_kaggle = transform(df_kaggle, "text")
-    nlp = spacy.load("en_core_web_sm")
-    df_kaggle = lemmatization(df_kaggle, "text", "text_lemma", nlp)
-    
+ 
         
-    resultado = pd.DataFrame(columns=["EXPERIMENT", "SEED", "RAM", "TERM", "HAM_LOS", "PREC", "REC", "F1"])
-    experiment = datetime.datetime.now()
-    experiment = int(experiment.strftime('%Y%m%d%H%M%S'))
-    for ram in range(min_ram, max_ram+1):
-        for size_ter in range(min_ter, max_ter+1):
-            for seed in range(0, n_iter):
-                print("Caculado experimentos para seed: {}".format(seed))
-                X_train, X_test, y_train, y_test = split(df_kaggle, "text", "all_tags", random_state=seed)    
-                X_train_tfidf, X_test_tfidf = tf_idf_vectorization(df_kaggle, 
-                                                                   "text_lemma", 
-                                                                   X_train, 
-                                                                   X_test, 
-                                                                   max_features=5000,
-                                                                   max_df=0.85)
-                
-                y_train = np.asarray(list(y_train))
-                y_test = np.asarray(list(y_test))
-                X_train_tfidf = X_train_tfidf.todense()
-                X_test_tfidf = X_test_tfidf.todense()
-                
-                    
-                pred_matrix = wisard_classifier(tags_to_class, X_train_tfidf, 
-                                    y_train, X_test_tfidf, 
-                                    y_test, num=ram, size=size_ter)
-                hl_result = hamming_loss(y_test, pred_matrix)
-                p_result = precision_score(y_test, pred_matrix, pos_label='positive', average='micro')
-                r_result = recall_score(y_test, pred_matrix, pos_label='positive', average='micro')
-                f_result = f1_score(y_test, pred_matrix, pos_label='positive', average='micro')
-                print(hl_result)
-                print(p_result)
-                print(r_result)
-                print(f_result)
-                print(seed)
-                print(ram)
-                print(size_ter)
-                resultado.loc[-1] = [experiment, seed, ram, size_ter, hl_result, p_result, r_result, f_result]
-                resultado.index = resultado.index + 1
-                resultado = resultado.sort_index()
-        
-                outname = "{}_resultados_wisard_ram_{}_{}_term_{}_{}_amostra_{}.csv".format(
-                    experiment,
-                    min_ram, 
-                    max_ram,
-                    min_ter,
-                    max_ter,
-                    n_sample)
-   
+    #resultado = pd.DataFrame(columns=["EXPERIMENT", "SEED", "RAM", "TERM", "HAM_LOS", "PREC", "REC", "F1"])
+    #experiment = datetime.datetime.now()
 
-                resultado.to_csv(outname)
     
     
-    
-# =============================================================================
-#     y_pred = log_reg_one_vs_rest(X_train_tfidf, X_test_tfidf, 
-#                                  y_train, y_test)
-#     
-#     y_pred = svm_one_vs_rest(X_train_tfidf, X_test_tfidf, 
-#                              y_train, y_test)
-#     pred_matrix = wisard_classifier(tags_to_class, X_train_tfidf, 
-#                                     y_train, X_test_tfidf, 
-#                                     y_test, num=32, size=32)
-# =============================================================================
-    
-    
-
-        
-        
-    #pred_matrix = pred_matrix.astype(np.int32)
-    #hl = hamming_loss(y_test, pred_matrix)
 
 
