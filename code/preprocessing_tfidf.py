@@ -61,7 +61,7 @@ def lemmatization(dataframe, column_to_lemma, new_column, nlp):
         dataframe.loc[index, new_column] = text_to_insert
     return dataframe
 
-def tf_idf_vectorization(dataframe, column_to_fit, max_features=5000, max_df=0.85):
+def tf_idf_vectorization(dataframe, column_to_fit, max_features=500, max_df=0.85):
     print("Getting TF-IDF...")
     print("Resetting indexes...")
     dataframe = dataframe.reset_index()
