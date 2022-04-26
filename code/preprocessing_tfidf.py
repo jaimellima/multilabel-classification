@@ -130,9 +130,7 @@ def main():
     n_sample = arguments.n_sample
     featureSource = arguments.featureSource
     
-    
-    nlp = spacy.load("en_core_web_sm")
-    
+   
     df_kaggle = load_csv(file, n=n_sample)
     if featureSource == 1:
         df_kaggle = concat_columns(df_kaggle, ["TITLE","ABSTRACT"], "text")
