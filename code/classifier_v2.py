@@ -86,9 +86,12 @@ def prepare_dataset_word2vec(dataframe, column_to_bin, column_dest_name, tags, t
     dataframe.to_csv(file_name)
 
 def prepare_dataset_tfidf(dataframe, column_dest_name, term_size, file_name):
+    print("Dataframe Shape: {}".format(dataframe.shape[1]))
     row_len = dataframe.shape[1] - 1
-    print("Tamanho da linha!{}".format(row_len))
+    print("Tamanho da linha: {}".format(row_len))
     vectors_bin = []
+    
+    dataframe = dataframe.reset_index()
     
     for index, row in dataframe.iterrows():
         vector = dataframe.iloc[index,0:row_len].values
@@ -159,6 +162,7 @@ def wisard_binary_relevance(tags, X_train, y_train, X_test, y_test, ram):
     print("Binary Relevance (Avg) - Accuracy: {}".format(acc_mean))
     print("Binary Relevance (Avg) - Hamming Loss: {}".format(hl_mean))
     print()
+    return acc_mean, hl_mean
     
     #labels_train = []
     #for tag in tags:
@@ -213,6 +217,10 @@ def wsd_w2v_experiment(tags, dataset, min_ter, max_ter, n_iter, min_ram, max_ram
                 wisard_binary_relevance(tags_to_class, X_train, y_train, X_test, y_test, ram)
             
 def wsd_tfidf_experiment(dataset, min_ter, max_ter, n_iter, min_ram, max_ram):
+    results = pd.DataFrame(columns=["N_ITER","MIN_TER","MAX_TER","MIN_RAM",
+                                    "MAX_RAM","RAM","THERMOMETER","ITERATION",
+                                    "ACC_LP","HL_LP","ACC_BR","HL_BR"])    
+    
     for thermometer in range(min_ter, max_ter+1):
         fname_tfidf = "df_binary_tfidf.csv"
         print("TF-IDF - Thermometer Parameter: {}".format(thermometer))
@@ -238,9 +246,30 @@ def wsd_tfidf_experiment(dataset, min_ter, max_ter, n_iter, min_ram, max_ram):
             X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.33, random_state=iteration)
             for ram in range(min_ram, max_ram+1):
                 print("TF-IDF - RAM Parameter: {}".format(ram))
-                acc, hl = wisard_label_powerset(X_train, y_train, X_test, y_test, ram)
-                wisard_binary_relevance(tags_to_class, X_train, y_train, X_test, y_test, ram)
+                acc_lp = 0
+                hl_lp = 0
+                acc_br = 0
+                hl_br = 0
+                acc_lp, hl_lp = wisard_label_powerset(X_train, y_train, X_test, y_test, ram)
+                acc_br, hl_br = wisard_binary_relevance(tags_to_class, X_train, y_train, X_test, y_test, ram)
+                new_dict = {"N_ITER": [n_iter],
+                            "MIN_TER": [min_ter], 
+                            "MAX_TER": [max_ter],
+                            "MIN_RAM": [min_ram], 
+                            "MAX_RAM": [max_ram],
+                            "RAM": [ram],
+                            "THERMOMETER": [thermometer],
+                            "ITERATION": [iteration],
+                            "ACC_LP": [acc_lp],
+                            "HL_LP": [hl_lp],
+                            "ACC_BR": [acc_br],
+                            "HL_BR": [hl_br]}
+            new_df = pd.DataFrame([new_dict])
+            results = pd.concat(results, new_df)
+            print(results)
                 
+               
+               
 if __name__=="__main__":
     
     #criar json com as classes
@@ -310,10 +339,10 @@ if __name__=="__main__":
     parser.add_argument('--preprocess', 
                     action='store', 
                     dest='preprocess', 
-                    default=0,
+                    default=1,
                     type=int,
                     required=True, 
-                    help='0: TF-IDF. 1: Doc2Vec Spacy')
+                    help='0: Doc2Vec Spacy. 1: TF-IDF.')
     
     parser.add_argument('--method', 
                     action='store', 
@@ -322,6 +351,14 @@ if __name__=="__main__":
                     type=int,
                     required=True, 
                     help='0: Label Powerset. 1: Binary Relevance')
+    
+    parser.add_argument('--featureSource', 
+                    action='store', 
+                    dest='featureSource', 
+                    default=1,
+                    type=int,
+                    required=True, 
+                    help='0: Title. 1: Title and Abstract. 2. Only NER')
     
     arguments = parser.parse_args()
     path_kaggle = "../dataset/kaggle_dataset.csv"
@@ -334,14 +371,22 @@ if __name__=="__main__":
     n_sample = arguments.n_sample
     preprocess = arguments.preprocess
     method = arguments.method
+    featureSource = arguments.featureSource
+    
     #carrega CSV, recebendo como parâmetro o número de amostras
     #df_kaggle = load_csv(path_kaggle, n=SAMPLE)
     dataset = load_csv(file)
     dataset = get_sample(dataset, n_sample)
-    if preprocess == 0:
-        wsd_tfidf_experiment(dataset, min_ter, max_ter, n_iter, min_ram, max_ram)
-    else:
+
+    if preprocess:
         wsd_w2v_experiment(tags_to_class, dataset, min_ter, max_ter, n_iter, min_ram, max_ram)
+    else:
+        wsd_tfidf_experiment(dataset, min_ter, max_ter, n_iter, min_ram, max_ram)
+        print()
+        print("Preprocess Method TF-IDF: {}".format(preprocess))
+        
+    
+    
 
     
 

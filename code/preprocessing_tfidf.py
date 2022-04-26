@@ -68,7 +68,7 @@ def tf_idf_vectorization(dataframe, column_to_fit, max_features=5000, max_df=0.8
     vetorizer = TfidfVectorizer(max_features=max_features, max_df=max_df)
     X_tfidf = vetorizer.fit_transform(dataframe[column_to_fit])
     df_tfidf = pd.DataFrame(X_tfidf.todense())
-    df_tfidf["all_tags"] = dataframe["all_tags"]
+    df_tfidf["labels"] = dataframe["all_tags"]
     return df_tfidf
 
 def save_sparse_csr(filename, array):
@@ -115,16 +115,30 @@ def main():
                     type=int,
                     required=True, 
                     help='Number of samples to be used for training and testing.')
+    
+    parser.add_argument('--featureSource', 
+                    action='store', 
+                    dest='featureSource', 
+                    default=1,
+                    type=int,
+                    required=True, 
+                    help='0: Title. 1: Title and Abstract. 2. Only NER')
+    
     arguments = parser.parse_args()
     
     file = arguments.file
     n_sample = arguments.n_sample
+    featureSource = arguments.featureSource
     
     
     nlp = spacy.load("en_core_web_sm")
     
     df_kaggle = load_csv(file, n=n_sample)
-    df_kaggle = concat_columns(df_kaggle, ["TITLE","ABSTRACT"], "text")
+    if featureSource == 1:
+        df_kaggle = concat_columns(df_kaggle, ["TITLE","ABSTRACT"], "text")
+    else:
+        df_kaggle = concat_columns(df_kaggle, ["TITLE"], "text")
+        
     df_kaggle = zip_columns_kaggle(df_kaggle)
     df_kaggle = transform(df_kaggle, "text")
     nlp = spacy.load("en_core_web_sm")
@@ -141,5 +155,4 @@ def main():
 
 if __name__=="__main__":
     main()
-
 
