@@ -50,6 +50,7 @@ def zip_columns_kaggle(dataframe):
 def lemmatization(dataframe, column_to_lemma, new_column, nlp):
     print("Getting Lemma...")
     dataframe[new_column] = ""
+    count = 0
     for index, row in dataframe.iterrows():
         doc = nlp(row[column_to_lemma])
         words = list()
@@ -59,7 +60,8 @@ def lemmatization(dataframe, column_to_lemma, new_column, nlp):
                 words.append(token.lemma_)
                 text_to_insert = " ".join(words) 
         dataframe.loc[index, new_column] = text_to_insert
-    return dataframe
+        count+= len(words)
+    return dataframe, count
 
 def tf_idf_vectorization(dataframe, column_to_fit, max_features=500, max_df=0.85):
     print("Getting TF-IDF...")
@@ -140,7 +142,7 @@ def main():
     df_kaggle = zip_columns_kaggle(df_kaggle)
     df_kaggle = transform(df_kaggle, "text")
     nlp = spacy.load("en_core_web_lg")
-    df_kaggle = lemmatization(df_kaggle, "text", "text_lemma", nlp)
+    df_kaggle, total_lemmas = lemmatization(df_kaggle, "text", "text_lemma", nlp)
     df_tfidf = tf_idf_vectorization(df_kaggle, 
                                    "text_lemma", 
                                    max_features=5000,
@@ -149,6 +151,7 @@ def main():
     #save_sparse_csr(file_tfidf_name, X_tfidf)
     #df_tfidf = pd.DataFrame(X_tfidf.todense())
     df_tfidf.to_csv("vectors_tfidf.csv", index=False)
+    print("Total Lemmas: {}".format(total_lemmas))
     print("TF-IDF DONE!!!...")   
 
 if __name__=="__main__":
