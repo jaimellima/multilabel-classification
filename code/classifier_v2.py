@@ -226,7 +226,6 @@ def wsd_tfidf_experiment(dataset, min_ter, max_ter, n_iter, min_ram, max_ram):
     print(results_fname)
     for thermometer in range(min_ter, max_ter+1):
         fname_tfidf = "df_binary_tfidf.csv"
-        print("TF-IDF - Thermometer Parameter: {}".format(thermometer))
         prepare_dataset_tfidf(dataset, "binary", thermometer, fname_tfidf)
         dataset_bin = load_csv(fname_tfidf)
         X = []
@@ -248,6 +247,8 @@ def wsd_tfidf_experiment(dataset, min_ter, max_ter, n_iter, min_ram, max_ram):
         for iteration in range(0, n_iter):
             X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.33, random_state=iteration)
             for ram in range(min_ram, max_ram+1):
+                print("TF-IDF - Thermometer Parameter: {}".format(thermometer))
+                print("TF-IDF - Iteration Parameter: {}".format(iteration))
                 print("TF-IDF - RAM Parameter: {}".format(ram))
                 acc_lp = 0
                 hl_lp = 0
