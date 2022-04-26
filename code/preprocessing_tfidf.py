@@ -141,7 +141,7 @@ def main():
         
     df_kaggle = zip_columns_kaggle(df_kaggle)
     df_kaggle = transform(df_kaggle, "text")
-    nlp = spacy.load("en_core_web_sm")
+    nlp = spacy.load("en_core_web_lg")
     df_kaggle = lemmatization(df_kaggle, "text", "text_lemma", nlp)
     df_tfidf = tf_idf_vectorization(df_kaggle, 
                                    "text_lemma", 
