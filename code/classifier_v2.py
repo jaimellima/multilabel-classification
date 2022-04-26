@@ -220,7 +220,10 @@ def wsd_tfidf_experiment(dataset, min_ter, max_ter, n_iter, min_ram, max_ram):
     results = pd.DataFrame(columns=["N_ITER","MIN_TER","MAX_TER","MIN_RAM",
                                     "MAX_RAM","RAM","THERMOMETER","ITERATION",
                                     "ACC_LP","HL_LP","ACC_BR","HL_BR"])    
-    
+    #results_fname = results
+    date = datetime.datetime.now()
+    results_fname = "results_{}".format(date.strftime("%y%m%d_%H%M%S"))
+    print(results_fname)
     for thermometer in range(min_ter, max_ter+1):
         fname_tfidf = "df_binary_tfidf.csv"
         print("TF-IDF - Thermometer Parameter: {}".format(thermometer))
@@ -252,21 +255,20 @@ def wsd_tfidf_experiment(dataset, min_ter, max_ter, n_iter, min_ram, max_ram):
                 hl_br = 0
                 acc_lp, hl_lp = wisard_label_powerset(X_train, y_train, X_test, y_test, ram)
                 acc_br, hl_br = wisard_binary_relevance(tags_to_class, X_train, y_train, X_test, y_test, ram)
-                new_dict = {"N_ITER": [n_iter],
-                            "MIN_TER": [min_ter], 
-                            "MAX_TER": [max_ter],
-                            "MIN_RAM": [min_ram], 
-                            "MAX_RAM": [max_ram],
-                            "RAM": [ram],
-                            "THERMOMETER": [thermometer],
-                            "ITERATION": [iteration],
-                            "ACC_LP": [acc_lp],
-                            "HL_LP": [hl_lp],
-                            "ACC_BR": [acc_br],
-                            "HL_BR": [hl_br]}
-            new_df = pd.DataFrame([new_dict])
-            results = pd.concat(results, new_df)
-            print(results)
+                new_dict = {"N_ITER": n_iter,
+                            "MIN_TER": min_ter, 
+                            "MAX_TER": max_ter,
+                            "MIN_RAM": min_ram, 
+                            "MAX_RAM": max_ram,
+                            "RAM": ram,
+                            "THERMOMETER": thermometer,
+                            "ITERATION": iteration,
+                            "ACC_LP": acc_lp,
+                            "HL_LP": hl_lp,
+                            "ACC_BR": acc_br,
+                            "HL_BR": hl_br}
+                results = results.append(new_dict, ignore_index=True)
+    results.to_csv(results_fname)
                 
                
                
