@@ -9,7 +9,9 @@ Created on Mon Apr 11 17:36:31 2022
 import numpy as np
 import pandas as pd
 import argparse
+#comentário
 
+print("Isso é uma alteração de teste para o github")
 
 def load_csv(path):
     df = pd.read_csv(path)
