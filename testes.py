@@ -7,4 +7,14 @@ Created on Sat Dec 11 00:31:17 2021
 
 import pandas as pd
 
-dados0 = pd.read_csv("G:/Meu Drive/Doutorado/experimentos/Classificacao_Multilabel_Documentos_Cientificos/multilabel_coding/code/20211214165512_resultados_wisard_ram_3_5_term_3_5_amostra_10.csv")
+df = pd.read_csv("/home/jolima/Documentos/multilabel-classification/multi-label-classification/dataset/kaggle_dataset.csv")
+df = df.sample(n=10)
+columns = ['Computer Science', 'Physics', 'Mathematics',
+       'Statistics', 'Quantitative Biology', 'Quantitative Finance']
+labels = df[columns].values
+for label in labels:
+    ps = "".join([str(x) for x in label])
+    print(ps)
+    ps = list(ps)
+    print(ps)
+

@@ -27,6 +27,7 @@ def load_csv(path):
 def get_sample(df, n=100):
     return df.sample(n=n)
 
+#Termômetro para a Wisard
 def thermometerEncoder(X, size, min=0, max=1):
     X = np.asarray(X)
     if X.ndim == 0:
@@ -37,6 +38,7 @@ def thermometerEncoder(X, size, min=0, max=1):
         f = lambda i, j, k: X[k, j] >= min + i*(max - min)/size 
     return  np.fromfunction(f, (size, *reversed(X.shape)), dtype=int).astype(int)
 
+#cria o flatten a partir do dados binarizados pelo termômetro.
 def flatten(X, column_major=True):
     X = np.asarray(X)
     order = 'F' if column_major else 'C'
@@ -69,6 +71,8 @@ def svm_one_vs_rest(X_train_tfidf, X_test_tfidf, y_train, y_test):
     return y_pred
     
 def prepare_dataset_word2vec(dataframe, column_to_bin, column_dest_name, tags, term_size, file_name):
+    #Prepara os dados oriundos os preprocessamento utilizando o word2vec da biblioteca Spacy.
+    #retira caracteres especiais oriundos do processamento e atribuição de labels para o Label Powerset
     for index, row in dataframe.iterrows():
         vector = row[column_to_bin]
         vector = vector.replace("[", "")
