@@ -13,6 +13,12 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from spacy.lang.en.stop_words import STOP_WORDS
 from distutils.command.clean import clean
 from sklearn.metrics import hamming_loss
+from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.decomposition import TruncatedSVD
+from sklearn.feature_selection import chi2
+from sklearn.feature_selection import SelectKBest
+
+import config as cfg
 
 
 class Preprocessing:
@@ -43,8 +49,8 @@ class Preprocessing:
         print("Resetting indexes...")
         vetorizer = TfidfVectorizer(max_features=max_features, max_df=max_df)
         X_tfidf = vetorizer.fit_transform(documents)
-        X_tfidf = X_tfidf.todense()
-        return X_tfidf
+        X_tfidf_dense = X_tfidf.todense()
+        return X_tfidf_dense
 
     def doc2vec_spacy(self, documents, nlp_model):
         #recebe um vetor/conjunto de documento e retorna uma matriz com os vetores correspondentes a cada documento.
@@ -66,8 +72,11 @@ class Preprocessing:
         return  np.fromfunction(f, (size, *reversed(X.shape)), dtype=int).astype(int)
 
     #Termômetro para a Wisard com base nos valores de média do vetor
-    def thermometerEncoderMean(self,X, size, mean):
-        pass
+    def thermometerEncoder(self,X):
+        X = np.asarray(X)
+        X[X>0] = 0
+        X[X<=0] = 1
+        return X
 
     #cria o flatten a partir do dados binarizados pelo termômetro.
     def flatten(self, X, column_major=True):
@@ -79,28 +88,36 @@ class Preprocessing:
             return X.ravel(order=order)
         return np.asarray([X[:, :, i].ravel(order=order) for i in range(X.shape[2])])
 
-    def binarize(self, vector, term_size, min_value, max_value):
+    def binarize(self, vector, term_size, min_value=0, max_value=1):
         vector_bin = self.flatten(self.thermometerEncoderMinMax(vector, term_size, min_value, max_value))
-        print(vector_bin[0])
-        return vector_bin[0]
+        #vector_bin = self.flatten(self.thermometerEncoder(vector))
+        return vector_bin
 
     def get_labels(self, dataframe, columns):
         #retorna uma matriz com as labels binárias para a BR. A matriz aqui é transposta. 
         #retorna um vetor com as labels. O tamanho do vetor é igual ao número de documentos.
-        binary_labels = dataframe[columns].values
+        binary_labels = []
+        for index in columns:
+            binary_labels.append(dataframe[columns[index][0]].values)
+        binary_labels = np.array(binary_labels)
+        binary_labels = binary_labels.transpose()
         powerset_labels = []
         for label in binary_labels:
             ps = "".join([str(x) for x in label])
             powerset_labels.append(ps)
-        binary_labels = binary_labels.transpose()
         return binary_labels, powerset_labels
+
+class FeatureSelection:
+
+    def __init__(self):
+        print("Objeto criado!")
 
 class Classifing:
     def __init__(self, classifier):
         self.classifier=classifier
 
-    def wisard_label_powerset(self, X_train, y_train, X_test, y_test, ram):
-        wisard = wsd.Wisard(ram, ignoreZero=False)
+    def wisard_label_powerset(self, X_train, y_train, X_test, y_test, ram, ignore_zero=False):
+        wisard = wsd.Wisard(ram, ignoreZero=ignore_zero)
         wisard.train(X_train, y_train)
         y_pred = np.array(wisard.classify(X_test))
         acc = accuracy_score(y_test, y_pred)
@@ -111,11 +128,11 @@ class Classifing:
         
 if __name__=="__main__":
     #documents = ["It is a, test of a Text tested.[];;", "It is a second beautiful document for test"]
-    path_dataset = "../dataset/kaggle_dataset.csv"
-    term_size = 16
+    path_dataset = cfg.KAGGLE_DATASET
+    term_size = cfg.TERM_SIZE_STD
     dataframe = pd.read_csv(path_dataset)
     dataframe["TEXT"] = dataframe["TITLE"] + dataframe["ABSTRACT"] 
-    dataframe = dataframe.sample(n=100)
+    dataframe = dataframe.sample(n=cfg.SAMPLE)
     documents = dataframe["TEXT"].values
     processed_documents = []
     prep = Preprocessing()
@@ -124,30 +141,22 @@ if __name__=="__main__":
         processed_text = prep.remove_punctuations(text)
         processed_text = prep.remove_stop_words(processed_text)
         processed_text = " ".join([word for word in processed_text])
-        processed_text = prep.lemmatize_tokenize(processed_text, nlp)
-        processed_text = " ".join([word for word in processed_text])
-        processed_documents.append(processed_text)
-    #print(processed_documents)
-    vectors = prep.tf_idf_vectorization(processed_documents, max_features=5000)
-    #vectors = prep.doc2vec_spacy(processed_documents, nlp)
-    vectors_bin = []
-    for vector in vectors:
+        lemma_text = prep.lemmatize_tokenize(processed_text, nlp)
+        final_text = " ".join([word for word in lemma_text])
+        processed_documents.append(final_text)
+    print(len(processed_documents))
+    columns_tag = cfg.TAGS_COLUMNS
+    y_br, y_ps = prep.get_labels(dataframe, columns_tag)
+    y_br_0 = np.array(y_br[:,1].astype(str)) 
+    vectorizer2 = CountVectorizer(analyzer='word', ngram_range=(1, 3))
+    X2 = vectorizer2.fit_transform(processed_documents)
+    X2_ = X2.toarray()
+    print(X2_.shape)
+    matriz_bin = []
+    for vector in X2_:
         v = prep.binarize(vector, term_size,  np.min(vector), np.max(vector))
-        vectors_bin.append(v)
-    vectors_bin = pd.DataFrame(vectors_bin)
-    columns = ['Computer Science', 'Physics', 'Mathematics',
-       'Statistics', 'Quantitative Biology', 'Quantitative Finance']
-    y_br, y_ps = prep.get_labels(dataframe, columns)
+        matriz_bin.append(v)
+    matriz_bin = pd.DataFrame(matriz_bin)
     classifier = Classifing(0)
-    #y_br_0 = np.array(y_br[0].astype(str))
-    #print(y_br_0)
-    print(vectors_bin)
-    print(y_ps)
-    acc, y_pred= classifier.wisard_label_powerset(vectors_bin, y_ps, vectors_bin, y_ps, 32)
-    hl = hamming_loss(y_ps, y_pred)
-    print(acc)
-    print(hl)
-    print(y_pred)
-    #Marcos falou que TF é melhor sim que TF-IDF
-
-    
+    acc, y_pred= classifier.wisard_label_powerset(matriz_bin, y_ps, matriz_bin, y_ps, cfg.RAM_STD, ignore_zero=cfg.IGNORE_ZERO_WSD)
+    print("Acurária: {}".format(acc))
