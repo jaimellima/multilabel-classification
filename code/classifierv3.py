@@ -17,6 +17,8 @@ from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.decomposition import TruncatedSVD
 from sklearn.feature_selection import chi2
 from sklearn.feature_selection import SelectKBest
+from gensim.models import LsiModel
+from gensim.test.utils import common_dictionary, common_corpus
 
 import config as cfg
 
@@ -144,19 +146,50 @@ if __name__=="__main__":
         lemma_text = prep.lemmatize_tokenize(processed_text, nlp)
         final_text = " ".join([word for word in lemma_text])
         processed_documents.append(final_text)
-    print(len(processed_documents))
+    print("Total processed documents: {}".format(len(processed_documents)))
     columns_tag = cfg.TAGS_COLUMNS
     y_br, y_ps = prep.get_labels(dataframe, columns_tag)
     y_br_0 = np.array(y_br[:,1].astype(str)) 
     vectorizer2 = CountVectorizer(analyzer='word', ngram_range=(1, 3))
     X2 = vectorizer2.fit_transform(processed_documents)
-    X2_ = X2.toarray()
+    X2 = X2.todense()
+
+    terms = vectorizer2.get_feature_names()
+    new_terms = []
+
+    #função para retornar os indices das colunas a serem excluídas em cada classes
+    cs_docs_index = [ix for ix, f in enumerate(y_ps) if f[0] != '0']
+
+    print(cs_docs_index)
+    cs_docs = X2[cs_docs_index,:]
+    print(cs_docs.shape)
+    teste = np.argwhere(cs_docs != 0)
+    features_cs_index = teste[:,1]
+
+    X2_ = cs_docs[:,features_cs_index]
+    y_ps = np.array(y_ps)
+    print(len(y_ps))
+    
+    y_ps = y_ps[cs_docs_index]
+    print(y_ps)
+
     print(X2_.shape)
+
+    print()
+    
+
+    # feature_index = [ix for ix, f in enumerate(terms) if f in new_terms]
+    # print(feature_index)
+    
+    # X2_ = X2[:,feature_index]
+
     matriz_bin = []
     for vector in X2_:
         v = prep.binarize(vector, term_size,  np.min(vector), np.max(vector))
-        matriz_bin.append(v)
+        matriz_bin.append(v[0])
     matriz_bin = pd.DataFrame(matriz_bin)
+
+    
     classifier = Classifing(0)
     acc, y_pred= classifier.wisard_label_powerset(matriz_bin, y_ps, matriz_bin, y_ps, cfg.RAM_STD, ignore_zero=cfg.IGNORE_ZERO_WSD)
     print("Acurária: {}".format(acc))
