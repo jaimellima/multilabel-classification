@@ -45,13 +45,14 @@ class Preprocessing:
                 lemmas.append(token.lemma_)
         return lemmas
 
-    def tf_idf_vectorization(self, documents, max_features=500, max_df=0.85):
+    def tf_idf_vectorization(self, documents):
         #recebe um vetor/conjunto de documento e retorna uma matriz TF-IDF
         print("Getting TF-IDF...")
         print("Resetting indexes...")
-        vetorizer = TfidfVectorizer(max_features=max_features, max_df=max_df)
+        vetorizer = TfidfVectorizer()
         X_tfidf = vetorizer.fit_transform(documents)
         X_tfidf_dense = X_tfidf.todense()
+        pd.DataFrame(X_tfidf_dense).to_csv("tf_idf.csv")
         return X_tfidf_dense
 
     def doc2vec_spacy(self, documents, nlp_model):
@@ -112,7 +113,14 @@ class Preprocessing:
 class FeatureSelection:
 
     def __init__(self):
-        print("Objeto criado!")
+        print("Iniciando seleção de features")
+
+    def get_features_index(self, dataset, vector_labels, label_to_select, min_threshold):
+        docs_index = [ix for ix, f in enumerate(vector_labels) if f == label_to_select]
+        docs_dataset = dataset[docs_index,:]
+        docs_select = np.argwhere(docs_dataset >= min_threshold)
+        features_index = docs_select[:,1]
+        return features_index
 
 class Classifing:
     def __init__(self, classifier):
@@ -149,39 +157,62 @@ if __name__=="__main__":
     print("Total processed documents: {}".format(len(processed_documents)))
     columns_tag = cfg.TAGS_COLUMNS
     y_br, y_ps = prep.get_labels(dataframe, columns_tag)
-    y_br_0 = np.array(y_br[:,1].astype(str)) 
+    y_br_0 = np.array(y_br[:,0].astype(str))
+    y_br_1 = np.array(y_br[:,1].astype(str)) 
+    y_br_2 = np.array(y_br[:,2].astype(str)) 
+    y_br_3 = np.array(y_br[:,3].astype(str)) 
+    y_br_4 = np.array(y_br[:,4].astype(str)) 
+    y_br_5 = np.array(y_br[:,5].astype(str))  
+
     vectorizer2 = CountVectorizer(analyzer='word', ngram_range=(1, 3))
+
     X2 = vectorizer2.fit_transform(processed_documents)
     X2 = X2.todense()
 
-    terms = vectorizer2.get_feature_names()
-    new_terms = []
+    #X2 = prep.tf_idf_vectorization(processed_documents)
+
+    # terms = vectorizer2.get_feature_names()
+    # terms = np.array(terms)
+    # terms_to_train = []
 
     #função para retornar os indices das colunas a serem excluídas em cada classes
-    cs_docs_index = [ix for ix, f in enumerate(y_ps) if f[0] != '0']
+    #cs_docs_index = [ix for ix, f in enumerate(y_br_0) if f != '0']
 
-    print(cs_docs_index)
-    cs_docs = X2[cs_docs_index,:]
-    print(cs_docs.shape)
-    teste = np.argwhere(cs_docs != 0)
-    features_cs_index = teste[:,1]
-
-    X2_ = cs_docs[:,features_cs_index]
-    y_ps = np.array(y_ps)
-    print(len(y_ps))
     
-    y_ps = y_ps[cs_docs_index]
-    print(y_ps)
+    
+    label_to_select = '1'
+    print("Original X Shape: ", X2.shape)
 
-    print(X2_.shape)
-
+    fs = FeatureSelection()
+    features_cs_index = fs.get_features_index(X2, y_br_0, label_to_select, 1)
+    index_to_train_0 = features_cs_index
+    print("index_to_train_0: {}".format(len(index_to_train_0)))
     print()
+    # features_cs_index = fs.get_features_index(X2, y_br_1, label_to_select, 0, 0)
+    # index_to_train_1 = features_cs_index
+
+    # features_cs_index = fs.get_features_index(X2, y_br_2, label_to_select, 0, 0)
+    # index_to_train_2 = features_cs_index
+
+    # features_cs_index = fs.get_features_index(X2, y_br_3, label_to_select, 0, 0)
+    # index_to_train_3 = features_cs_index
+
+    # features_cs_index = fs.get_features_index(X2, y_br_4, label_to_select, 0, 0)
+    # index_to_train_4 = features_cs_index
+
+    # features_cs_index = fs.get_features_index(X2, y_br_5, label_to_select, 0, 0)
+    # index_to_train_5 = features_cs_index
+
+    features = index_to_train_0
+    #features = np.concatenate((index_to_train_0, index_to_train_1, index_to_train_2, index_to_train_3, index_to_train_4, index_to_train_5))
+    features = np.unique(features)
+    print(len(features))
+
+    print("Final X Shape: ", X2.shape)
     
 
-    # feature_index = [ix for ix, f in enumerate(terms) if f in new_terms]
-    # print(feature_index)
-    
-    # X2_ = X2[:,feature_index]
+    X2_ = X2[:,features]
+    print("X_ Shape: {}".format(X2_.shape))
 
     matriz_bin = []
     for vector in X2_:
@@ -189,7 +220,6 @@ if __name__=="__main__":
         matriz_bin.append(v[0])
     matriz_bin = pd.DataFrame(matriz_bin)
 
-    
     classifier = Classifing(0)
-    acc, y_pred= classifier.wisard_label_powerset(matriz_bin, y_ps, matriz_bin, y_ps, cfg.RAM_STD, ignore_zero=cfg.IGNORE_ZERO_WSD)
+    acc, y_pred= classifier.wisard_label_powerset(matriz_bin, y_br_0, matriz_bin, y_br_0, cfg.RAM_STD, ignore_zero=cfg.IGNORE_ZERO_WSD)
     print("Acurária: {}".format(acc))
