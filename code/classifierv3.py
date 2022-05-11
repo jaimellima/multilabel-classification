@@ -166,10 +166,10 @@ if __name__=="__main__":
 
     vectorizer2 = CountVectorizer(analyzer='word', ngram_range=(1, 3))
 
-    X2 = vectorizer2.fit_transform(processed_documents)
-    X2 = X2.todense()
+    #X2 = vectorizer2.fit_transform(processed_documents)
+    #X2 = X2.todense()
 
-    #X2 = prep.tf_idf_vectorization(processed_documents)
+    X2 = prep.tf_idf_vectorization(processed_documents)
 
     # terms = vectorizer2.get_feature_names()
     # terms = np.array(terms)
@@ -177,40 +177,42 @@ if __name__=="__main__":
 
     #função para retornar os indices das colunas a serem excluídas em cada classes
     #cs_docs_index = [ix for ix, f in enumerate(y_br_0) if f != '0']
-
-    
     
     label_to_select = '1'
     print("Original X Shape: ", X2.shape)
 
+    print(X2)
     fs = FeatureSelection()
-    features_cs_index = fs.get_features_index(X2, y_br_0, label_to_select, 1)
+    features_cs_index = fs.get_features_index(X2, y_br_0, label_to_select, 2)
     index_to_train_0 = features_cs_index
     print("index_to_train_0: {}".format(len(index_to_train_0)))
     print()
-    # features_cs_index = fs.get_features_index(X2, y_br_1, label_to_select, 0, 0)
-    # index_to_train_1 = features_cs_index
 
-    # features_cs_index = fs.get_features_index(X2, y_br_2, label_to_select, 0, 0)
-    # index_to_train_2 = features_cs_index
+    features_cs_index = fs.get_features_index(X2, y_br_1, label_to_select, 1)
+    index_to_train_1 = features_cs_index
 
-    # features_cs_index = fs.get_features_index(X2, y_br_3, label_to_select, 0, 0)
-    # index_to_train_3 = features_cs_index
+    features_cs_index = fs.get_features_index(X2, y_br_2, label_to_select, 1)
+    index_to_train_2 = features_cs_index
 
-    # features_cs_index = fs.get_features_index(X2, y_br_4, label_to_select, 0, 0)
-    # index_to_train_4 = features_cs_index
+    features_cs_index = fs.get_features_index(X2, y_br_3, label_to_select, 1)
+    index_to_train_3 = features_cs_index
 
-    # features_cs_index = fs.get_features_index(X2, y_br_5, label_to_select, 0, 0)
-    # index_to_train_5 = features_cs_index
+    features_cs_index = fs.get_features_index(X2, y_br_4, label_to_select, 1)
+    index_to_train_4 = features_cs_index
 
-    features = index_to_train_0
-    #features = np.concatenate((index_to_train_0, index_to_train_1, index_to_train_2, index_to_train_3, index_to_train_4, index_to_train_5))
+    features_cs_index = fs.get_features_index(X2, y_br_5, label_to_select, 1)
+    index_to_train_5 = features_cs_index
+
+    features_not_0 = np.concatenate((index_to_train_1, index_to_train_2, index_to_train_3, index_to_train_4, index_to_train_5))
+    print("len features_not_0: {}".format(len(features_not_0)))
+    features = [feature for feature in index_to_train_0 if feature not in features_not_0]
     features = np.unique(features)
-    print(len(features))
+    print("len features: {}".format(len(features)))
 
     print("Final X Shape: ", X2.shape)
+    print("Features:")
+    print(features)
     
-
     X2_ = X2[:,features]
     print("X_ Shape: {}".format(X2_.shape))
 
@@ -220,6 +222,8 @@ if __name__=="__main__":
         matriz_bin.append(v[0])
     matriz_bin = pd.DataFrame(matriz_bin)
 
+    print(matriz_bin.shape)
+
     classifier = Classifing(0)
-    acc, y_pred= classifier.wisard_label_powerset(matriz_bin, y_br_0, matriz_bin, y_br_0, cfg.RAM_STD, ignore_zero=cfg.IGNORE_ZERO_WSD)
+    acc, y_pred= classifier.wisard_label_powerset(matriz_bin, y_br_1, matriz_bin, y_br_1, cfg.RAM_STD, ignore_zero=cfg.IGNORE_ZERO_WSD)
     print("Acurária: {}".format(acc))

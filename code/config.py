@@ -1,7 +1,7 @@
 
 KAGGLE_DATASET = "../dataset/kaggle_dataset.csv"
-TERM_SIZE_STD = 16
-RAM_STD = 32
+TERM_SIZE_STD = 8
+RAM_STD = 16
 IGNORE_ZERO_WSD = False
 
 N_COMPONENTES_SVD = 100
