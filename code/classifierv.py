@@ -2,11 +2,12 @@ import re
 from sklearn.metrics import accuracy_score
 import spacy
 import en_core_web_lg
+#spacy.load("en_core_web_lg")
 import pandas as pd
 import numpy as np
 
-import matplotlib.pylab as plt
-import seaborn as sns; sns.set()
+#import matplotlib.pylab as plt
+#import seaborn as sns; sns.set()
 import wisardpkg as wsd
 
 from sklearn.feature_extraction.text import TfidfVectorizer
@@ -17,9 +18,14 @@ from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.decomposition import TruncatedSVD
 from sklearn.feature_selection import chi2
 from sklearn.feature_selection import SelectKBest
+from sklearn.linear_model import LogisticRegression
+from sklearn.multiclass import OneVsRestClassifier
+from sklearn.model_selection import train_test_split
 from gensim.models import LsiModel
 from gensim.test.utils import common_dictionary, common_corpus
 
+
+#importação do arquivo de configurações
 import config as cfg
 
 
@@ -96,7 +102,7 @@ class Preprocessing:
         #vector_bin = self.flatten(self.thermometerEncoder(vector))
         return vector_bin
 
-    def get_labels(self, dataframe, columns):
+    def get_labels(self, dataframe: pd.DataFrame, columns: np.array) -> np.array:
         #retorna uma matriz com as labels binárias para a BR. A matriz aqui é transposta. 
         #retorna um vetor com as labels. O tamanho do vetor é igual ao número de documentos.
         binary_labels = []
@@ -112,15 +118,31 @@ class Preprocessing:
 
 class FeatureSelection:
 
+    #TODO: Aumentar o número de ocorrências em palavras que ocorrem no título e no resumo (Agrawal, 2013)
+
     def __init__(self):
         print("Iniciando seleção de features")
 
-    def get_features_index(self, dataset, vector_labels, label_to_select, min_threshold):
+    def get_features_index(self, dataset, vector_labels, label_to_select, min_tf_threshold):
         docs_index = [ix for ix, f in enumerate(vector_labels) if f == label_to_select]
         docs_dataset = dataset[docs_index,:]
-        docs_select = np.argwhere(docs_dataset >= min_threshold)
+        docs_select = np.argwhere(docs_dataset >= min_tf_threshold)
         features_index = docs_select[:,1]
         return features_index
+
+    def remove_features_by_ndocs(self, X: np.matrix, n_docs: int)->np.array:
+        """Removes features that do not occur in a number less than n_docs
+
+        Args:
+            n_docs (int): número de documentos
+
+        Returns:
+            features indexes
+        """
+        #retorna a quantide de documentos em cada coluna
+        features = (X > 0).sum(0)
+        features = [ix for ix, sum_value in enumerate(np.ravel(features)) if sum_value >= n_docs]
+        return features
 
 class Classifing:
     def __init__(self, classifier):
@@ -138,7 +160,7 @@ class Classifing:
         
 if __name__=="__main__":
     #documents = ["It is a, test of a Text tested.[];;", "It is a second beautiful document for test"]
-    path_dataset = cfg.KAGGLE_DATASET
+    path_dataset = cfg.FILE_PATH
     term_size = cfg.TERM_SIZE_STD
     dataframe = pd.read_csv(path_dataset)
     dataframe["TEXT"] = dataframe["TITLE"] + dataframe["ABSTRACT"] 
@@ -146,6 +168,7 @@ if __name__=="__main__":
     documents = dataframe["TEXT"].values
     processed_documents = []
     prep = Preprocessing()
+    #nlp = spacy.load("en_core_web_lg")
     nlp = en_core_web_lg.load()
     for text in documents:
         processed_text = prep.remove_punctuations(text)
@@ -166,10 +189,12 @@ if __name__=="__main__":
 
     vectorizer2 = CountVectorizer(analyzer='word', ngram_range=(1, 3))
 
-    #X2 = vectorizer2.fit_transform(processed_documents)
-    #X2 = X2.todense()
+    X2 = vectorizer2.fit_transform(processed_documents)
+    X2 = X2.todense()
 
-    X2 = prep.tf_idf_vectorization(processed_documents)
+    #X2 = prep.tf_idf_vectorization(processed_documents)
+
+    #[index for ]
 
     # terms = vectorizer2.get_feature_names()
     # terms = np.array(terms)
@@ -177,53 +202,63 @@ if __name__=="__main__":
 
     #função para retornar os indices das colunas a serem excluídas em cada classes
     #cs_docs_index = [ix for ix, f in enumerate(y_br_0) if f != '0']
-    
+
     label_to_select = '1'
     print("Original X Shape: ", X2.shape)
-
-    print(X2)
     fs = FeatureSelection()
-    features_cs_index = fs.get_features_index(X2, y_br_0, label_to_select, 2)
-    index_to_train_0 = features_cs_index
+    features_cs_index = fs.get_features_index(X2, y_br_0, label_to_select, 1)
+    features_by_doc = fs.remove_features_by_ndocs(X2, 2)   
+    index_to_train_0 = np.concatenate((features_cs_index, features_by_doc))
+    index_to_train_0 = np.unique(index_to_train_0)
     print("index_to_train_0: {}".format(len(index_to_train_0)))
     print()
-
-    features_cs_index = fs.get_features_index(X2, y_br_1, label_to_select, 1)
-    index_to_train_1 = features_cs_index
-
-    features_cs_index = fs.get_features_index(X2, y_br_2, label_to_select, 1)
-    index_to_train_2 = features_cs_index
-
-    features_cs_index = fs.get_features_index(X2, y_br_3, label_to_select, 1)
-    index_to_train_3 = features_cs_index
-
-    features_cs_index = fs.get_features_index(X2, y_br_4, label_to_select, 1)
-    index_to_train_4 = features_cs_index
-
-    features_cs_index = fs.get_features_index(X2, y_br_5, label_to_select, 1)
-    index_to_train_5 = features_cs_index
-
-    features_not_0 = np.concatenate((index_to_train_1, index_to_train_2, index_to_train_3, index_to_train_4, index_to_train_5))
-    print("len features_not_0: {}".format(len(features_not_0)))
-    features = [feature for feature in index_to_train_0 if feature not in features_not_0]
+    features = [feature for feature in index_to_train_0]
     features = np.unique(features)
     print("len features: {}".format(len(features)))
-
     print("Final X Shape: ", X2.shape)
-    print("Features:")
-    print(features)
-    
     X2_ = X2[:,features]
     print("X_ Shape: {}".format(X2_.shape))
+    # matriz_bin = []
+    # for vector in X2_:
+    #     v = prep.binarize(vector, term_size,  np.min(vector), np.max(vector))
+    #     matriz_bin.append(v[0])
+    # matriz_bin = pd.DataFrame(matriz_bin)
 
-    matriz_bin = []
-    for vector in X2_:
-        v = prep.binarize(vector, term_size,  np.min(vector), np.max(vector))
-        matriz_bin.append(v[0])
-    matriz_bin = pd.DataFrame(matriz_bin)
+    # print(matriz_bin.shape)
 
-    print(matriz_bin.shape)
+    #TODO: TESTAR UTILIZANDO OUTROS CLASSIFICADORES ANTES DA WISARD
+    # classifier = Classifing(0)
+    # acc, y_pred= classifier.wisard_label_powerset(matriz_bin, y_br_0, matriz_bin, y_br_0, cfg.RAM_STD, ignore_zero=cfg.IGNORE_ZERO_WSD)
+    # print("Acurária: {}".format(acc))
 
-    classifier = Classifing(0)
-    acc, y_pred= classifier.wisard_label_powerset(matriz_bin, y_br_1, matriz_bin, y_br_1, cfg.RAM_STD, ignore_zero=cfg.IGNORE_ZERO_WSD)
-    print("Acurária: {}".format(acc))
+    clf = LogisticRegression(random_state=0).fit(X2_, y_br_0)
+    y_pred = clf.predict(X2_)
+    acc = accuracy_score(y_br_0, y_pred)
+    print(acc)
+
+    artigos_treino, artigos_teste, tags_treino, tags_teste = train_test_split(
+        X2_,
+        y_br_0,
+        test_size = 0.3
+    )
+
+    # clf = LogisticRegression(random_state=0).fit(artigos_treino, tags_treino)
+    # y_pred = clf.predict(artigos_teste)
+    # acc = accuracy_score(tags_teste, y_pred)
+    # hamming_loss_onevsrest = hamming_loss(tags_teste, y_pred)
+    # print(hamming_loss_onevsrest)
+    # print(acc)
+
+    # classificador_onevsrest = OneVsRestClassifier(LogisticRegression())
+    # classificador_onevsrest.fit(X2_, y_br)
+    # y_pred = classificador_onevsrest.predict(X2_)
+    # hamming_loss_onevsrest = hamming_loss(y_br, y_pred)
+    # print(hamming_loss_onevsrest)
+
+    classificador_onevsrest = OneVsRestClassifier(wsd.Wisard(8))
+    print(type(classificador_onevsrest))
+    classificador_onevsrest.fit(X2_, y_br)
+    y_pred = classificador_onevsrest.predict(X2_)
+    hamming_loss_onevsrest = hamming_loss(y_br, y_pred)
+    print(hamming_loss_onevsrest)
+

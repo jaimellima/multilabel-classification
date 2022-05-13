@@ -1,5 +1,13 @@
 
-KAGGLE_DATASET = "../dataset/kaggle_dataset.csv"
+from importlib.resources import path
+from os.path import dirname, join, abspath
+DIR_PATH = '/home/jolima/Documentos/multilabel-classification/multi-label-classification/dataset'
+
+current_dir = dirname(DIR_PATH)
+
+KAGGLE_DATASET = "dataset/kaggle_dataset.csv"
+FILE_PATH = join(current_dir, KAGGLE_DATASET)
+
 TERM_SIZE_STD = 8
 RAM_STD = 16
 IGNORE_ZERO_WSD = False

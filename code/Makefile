@@ -14,6 +14,6 @@ experimento_wisard_tfidf_br:
 	python3 classifier_v2.py --file ../code/vectors_tfidf.csv --n_iter 3 --min_ram 16 --max_ram 16 --min_ter 16 --max_ter 16 --n_sample 10 --preprocess 0 --method 1 --featureSource 1
 
 preprocessing:
-	python3 classifierv3.py 
+	python3.8 classifierv.py 
 
 	
