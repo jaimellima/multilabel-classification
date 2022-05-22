@@ -1,8 +1,12 @@
 from dataset import Dataset
+from preprocessing import Preprocessing
 
 #importação do arquivo de configurações
 import config as cfg
+import en_core_web_lg
 
-data = Dataset(cfg.KAGGLE_DATASET, ["ABSTRACT"], ["Computer Science"])
+nlp = en_core_web_lg.load()
 
-print(data.dataset)
+data = Dataset(cfg.KAGGLE_DATASET, ["ABSTRACT"], ["Computer Science"], "ABSTRACT", 10)
+preprocessing = Preprocessing()
+print(data.X_term_frequency)
