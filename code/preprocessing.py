@@ -7,23 +7,51 @@ import pandas as pd
 from sklearn.feature_extraction.text import TfidfVectorizer
 from spacy.lang.en.stop_words import STOP_WORDS
 from sklearn.feature_extraction.text import CountVectorizer
+from numba import jit, cuda
+
 
 class Preprocessing:
     
-    def __init__(self, nlp_model, stop_words = STOP_WORDS):
+    def __init__(self, path_dataset:str, n_sample:int , X_columns: list, y_columns: list, column_text_name: str, nlp_model, stop_words = STOP_WORDS):
         self.__stop_words = stop_words
         self.__nlp_model = nlp_model
-  
-    def remove_punctuations(self, text):
+        self.__dataset = self.__load_dataset(path_dataset, n_sample)
+        self.__concatenate_columns(X_columns)
+        self.__X = self.__dataset[column_text_name]
+        self.__y = self.__dataset[y_columns]
+        self.__X_term_frequency = None
+        self.__X_preprocessed = None
+
+    @property
+    def X_preprocessed(self):
+        return self.__X_preprocessed
+
+    @property
+    def X_term_frequency(self):
+        return self.__X_term_frequency
+
+    @property
+    def dataset(self):
+        return self.__dataset
+
+    def __load_dataset(self, path_dataset:str, n_sample: int):
+        dataset = pd.read_csv(path_dataset)
+        dataset = dataset.sample(n=n_sample)
+        return dataset
+
+    def __concatenate_columns(self, X_columns):
+        self.__dataset['TEXT'] = self.__dataset[X_columns].apply(lambda row: ''.join(row.values.astype(str)), axis=1)
+
+    def __remove_punctuations(self, text):
         text = text.lower()
         cleaned_text = re.findall("[a-zA-Z]+", text)
         return cleaned_text
 
-    def remove_stop_words(self, text):
+    def __remove_stop_words(self, text):
         cleaned_text = [word for word in text if not word in self.__stop_words]
         return cleaned_text
 
-    def lemmatize_tokenize(self, nlp_model: spacy, text: str):
+    def __lemmatize_tokenize(self, nlp_model: spacy, text: str):
         lemmas = []
         doc = nlp_model(text)
         for token in doc:
@@ -97,22 +125,21 @@ class Preprocessing:
             powerset_labels.append(ps)
         return binary_labels, powerset_labels
 
-    def preprocessing(self, dataset, column_name):
-        documents = self.dataset[column_name]
+    #@jit(target ="cuda")
+    def preprocessing(self):
+        documents = np.array(self.__X)
         X_preprocessed = []
-        preproc = Preprocessing()
         for text in documents:
-            cleaned_text = preproc.remove_punctuations(text)
-            cleaned_text = preproc.remove_stop_words(cleaned_text)
+            cleaned_text = self.__remove_punctuations(text)
+            cleaned_text = self.__remove_stop_words(cleaned_text)
             cleaned_text = " ".join([word for word in cleaned_text])
-            lemma_text = preproc.lemmatize_tokenize(self.__nlp_model, cleaned_text)
+            lemma_text = self.__lemmatize_tokenize(self.__nlp_model, cleaned_text)
             final_text = " ".join([word for word in lemma_text])
             X_preprocessed.append(final_text)
-        return X_preprocessed
+        self.__X_preprocessed = X_preprocessed
 
-    def term_frequency(self, dataset):
+    #@jit(target ="cuda")
+    def term_frequency(self):
         vectorizer2 = CountVectorizer(analyzer='word', ngram_range=(1, 3))
-        X_term_frequency = vectorizer2.fit_transform(dataset)
-        X_term_frequency = X_term_frequency.todense()
-        #self.__X_term_frequency = pd.DataFrame(self.__X_term_frequency)
-        return X_term_frequency
+        X_term_frequency = vectorizer2.fit_transform(self.__X_preprocessed)
+        self.__X_term_frequency = X_term_frequency.todense()

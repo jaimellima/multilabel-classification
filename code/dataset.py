@@ -21,7 +21,6 @@ class Dataset:
         self.__y = self.__dataset[y_columns]
         self.__X_preprocessed = []
         self.__X_term_frequency = None
-        self.__y = self.__dataset[y_columns]
         self.__X_train_folds = []
         self.__X_test_folds = []
         self.__y_train_folds = []
@@ -73,23 +72,7 @@ class Dataset:
             self.__X_test_folds.append(self.X.loc[test_index])
             self.__y_test_folds.append(self.y.loc[test_index])
 
-    def preprocessing(self):
-        documents = self.__X[self.__text_column_name]
-        nlp_model = en_core_web_lg.load()
-        preproc = Preprocessing()
-        for text in documents:
-            cleaned_text = preproc.remove_punctuations(text)
-            cleaned_text = preproc.remove_stop_words(cleaned_text)
-            cleaned_text = " ".join([word for word in cleaned_text])
-            lemma_text = preproc.lemmatize_tokenize(nlp_model, cleaned_text)
-            final_text = " ".join([word for word in lemma_text])
-            self.__X_preprocessed.append(final_text)
 
-    def term_frequency(self):
-        vectorizer2 = CountVectorizer(analyzer='word', ngram_range=(1, 3))
-        self.__X_term_frequency = vectorizer2.fit_transform(self.__X_preprocessed)
-        self.__X_term_frequency = self.__X_term_frequency.todense()
-        #self.__X_term_frequency = pd.DataFrame(self.__X_term_frequency)
 
 
 
