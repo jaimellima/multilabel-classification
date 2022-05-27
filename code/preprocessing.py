@@ -8,6 +8,8 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from spacy.lang.en.stop_words import STOP_WORDS
 from sklearn.feature_extraction.text import CountVectorizer
 from numba import jit, cuda
+from sklearn.feature_selection import chi2
+from sklearn.feature_selection import SelectKBest
 
 
 class Preprocessing:
@@ -18,21 +20,20 @@ class Preprocessing:
         self.__dataset = self.__load_dataset(path_dataset, n_sample)
         self.__concatenate_columns(X_columns)
         self.__X = self.__dataset[column_text_name]
-        self.__y = self.__dataset[y_columns]
-        self.__X_term_frequency = None
-        self.__X_preprocessed = None
-
-    @property
-    def X_preprocessed(self):
-        return self.__X_preprocessed
-
-    @property
-    def X_term_frequency(self):
-        return self.__X_term_frequency
+        self.__powerset_y = self.__powerset_labels(y_columns)
+        self.__binary_y = self.__binary_labels(y_columns)
 
     @property
     def dataset(self):
         return self.__dataset
+
+    @property
+    def powerset_y(self):
+        return self.__powerset_y
+
+    @property
+    def binary_y(self):
+        return self.__binary_y
 
     def __load_dataset(self, path_dataset:str, n_sample: int):
         dataset = pd.read_csv(path_dataset)
@@ -58,6 +59,18 @@ class Preprocessing:
             if not token.is_stop:
                 lemmas.append(token.lemma_)
         return lemmas
+
+    def __powerset_labels(self, y_columns):
+        self.__dataset['LABELS'] = self.__dataset[y_columns].apply(lambda row: ''.join(row.values.astype(str)), axis=1)
+        return self.__dataset['LABELS'].values
+
+    def __binary_labels(self, y_columns):
+        labels = self.__powerset_labels(y_columns)
+        binary_labels = []
+        for i in range(0, len(y_columns)):
+            bl = [label[i] for label in labels]
+            binary_labels.append(bl)
+        return np.array(binary_labels)
 
     def tf_idf_vectorization(self, documents):
         #recebe um vetor/conjunto de documento e retorna uma matriz TF-IDF
@@ -105,25 +118,14 @@ class Preprocessing:
             return X.ravel(order=order)
         return np.asarray([X[:, :, i].ravel(order=order) for i in range(X.shape[2])])
 
-    def binarize(self, vector, term_size, min_value=0, max_value=1, mean=0):
-        #vector_bin = self.flatten(self.thermometerEncoderMinMax(vector, term_size, min_value, max_value))
-        vector_bin = self.flatten(self.thermometerEncoder(vector, mean))
-        return vector_bin
-
-
-    def get_labels(self, dataframe: pd.DataFrame, columns: np.array) -> np.array:
-        #retorna uma matriz com as labels binárias para a BR. A matriz aqui é transposta. 
-        #retorna um vetor com as labels. O tamanho do vetor é igual ao número de documentos.
-        binary_labels = []
-        for index in columns:
-            binary_labels.append(dataframe[columns[index][0]].values)
-        binary_labels = np.array(binary_labels)
-        binary_labels = binary_labels.transpose()
-        powerset_labels = []
-        for label in binary_labels:
-            ps = "".join([str(x) for x in label])
-            powerset_labels.append(ps)
-        return binary_labels, powerset_labels
+    def binarize(self, X_vectorized, term_size, min_value=0, max_value=1):
+        #vector_bin = self.flatten(self.thermometerEncoderMinMax(vector, term_size, min_value, max_value)
+        mean = np.mean(X_vectorized)
+        bin = []
+        for vector in X_vectorized:
+            vector_bin = self.flatten(self.thermometerEncoder(vector, mean))
+            bin.append(vector_bin)
+        return np.array(bin)
 
     #@jit(target ="cuda")
     def preprocessing(self):
@@ -136,10 +138,31 @@ class Preprocessing:
             lemma_text = self.__lemmatize_tokenize(self.__nlp_model, cleaned_text)
             final_text = " ".join([word for word in lemma_text])
             X_preprocessed.append(final_text)
-        self.__X_preprocessed = X_preprocessed
+        return X_preprocessed
 
     #@jit(target ="cuda")
-    def term_frequency(self):
-        vectorizer2 = CountVectorizer(analyzer='word', ngram_range=(1, 3))
-        X_term_frequency = vectorizer2.fit_transform(self.__X_preprocessed)
-        self.__X_term_frequency = X_term_frequency.todense()
+    def vectorize(self, X_preprocessed, method="TF"):
+        X_vectorized = None
+        if method=="TF":
+            vectorizer = CountVectorizer(analyzer='word', ngram_range=(1, 3))
+            X_vectorized = vectorizer.fit_transform(X_preprocessed)
+            X_vectorized = X_vectorized.todense()
+        elif method=="TFIDF":
+            pass
+        else:
+            print('Select a valid method: TF/TF-IDF')
+        return X_vectorized
+
+    def selectKBest(self, X, y, method="chi2", k=100):
+        selector = SelectKBest(chi2, k=k).fit(X, y)
+        indexes = selector.get_support(indices=True)
+        return indexes
+
+    def filter_features(self, X, indexes):
+        X_ = X[:,indexes]
+        return X_
+
+        
+
+
+    

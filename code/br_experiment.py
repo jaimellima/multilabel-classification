@@ -23,16 +23,6 @@ def get_binary_matrix(y):
     return y_binary
 
 dataset = pd.read_csv(cfg.KAGGLE_DATASET)
-# print(dataset)
-
-# preprocessing = Preprocessing(path_dataset=cfg.KAGGLE_DATASET, n_sample=cfg.SAMPLE,
-#      X_columns=["TITLE", "ABSTRACT"], y_columns=['Computer Science', 'Physics'],
-#      column_text_name="TEXT", nlp_model=en_core_web_lg.load(), stop_words=STOP_WORDS)
-
-# preprocessing.preprocessing()
-# preprocessing.term_frequency()
-
-# print(preprocessing.X_term_frequency.shape)
 
 preprocessing = Preprocessing(path_dataset=cfg.KAGGLE_DATASET, 
                               n_sample=cfg.SAMPLE,
@@ -45,37 +35,6 @@ preprocessing = Preprocessing(path_dataset=cfg.KAGGLE_DATASET,
 X_preprocessed = preprocessing.preprocessing()
 X_vectorized = preprocessing.vectorize(method="TF", X_preprocessed=X_preprocessed)
 
-# #LABEL POWERSET EXPERIMENT
-# y_powerset = preprocessing.powerset_y
-# y_binary = preprocessing.binary_y
-# X_bin = preprocessing.binarize(term_size=16, X_vectorized=X_vectorized)
-# X_train, X_test, y_train, y_test = train_test_split(X_bin, y_powerset, test_size=0.33)
-# indexes = preprocessing.selectKBest(X_train, y_train, method="chi2", k=500)
-# print("Original X train shape {}".format(X_train.shape))
-# X_train_ = preprocessing.filter_features(X_train, indexes)
-# X_test_ = preprocessing.filter_features(X_test, indexes)
-# print("Feature-selected X train shape {}".format(X_train_.shape))
-
-# classifier = Classifier()
-# #LABEL POWERSET EXPERIMENT sem FS
-# y_pred = classifier.wisard(X_train=X_train, y_train=y_train, X_test=X_test, ram=8)
-# acc = accuracy_score(y_test, y_pred)
-# print("Accuracy score: {}".format(acc))
-# y_binary_test = get_binary_labels(y_test)
-# y_binary_pred = get_binary_labels(y_pred)
-# print(y_binary_test)
-# print(y_binary_pred)
-# hl = hamming_loss(y_binary_test, y_binary_pred)
-# print("Hamming Loss: {}".format(hl))
-
-# #LABEL POWERSET EXPERIMENT com FS
-# y_pred = classifier.wisard(X_train=X_train_, y_train=y_train, X_test=X_test_, ram=8)
-# acc = accuracy_score(y_test, y_pred)
-# print("Accuracy score FS: {}".format(acc))
-# y_binary_test = get_binary_labels(y_test)
-# y_binary_pred = get_binary_labels(y_pred)
-# hl = hamming_loss(y_binary_test, y_binary_pred)
-# print("Hamming Loss FS: {}".format(hl))
 
 #BINARY RELAVANCE EXPERIMENT
 y_binary = preprocessing.binary_y
