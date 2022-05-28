@@ -1,7 +1,7 @@
 
 #from importlib.resources import path
 from os.path import dirname, join, abspath
-DIR_PATH = '/home/jolima/Documentos/multilabel-classification/multi-label-classification/'
+DIR_PATH = '/home/lcad/jaimel/multilabel/multilabel-classification/'
 #DIR_PATH = '/home/jaimel/GoogleDrive/Doutorado/experimentos/Classificacao_Multilabel_Documentos_Cientificos/multilabel_code/'
 
 CURRENT_DIR = dirname(DIR_PATH)
