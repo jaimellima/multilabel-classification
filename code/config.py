@@ -1,7 +1,8 @@
 
 #from importlib.resources import path
 from os.path import dirname, join, abspath
-DIR_PATH = '/home/jolima/Documentos/multilabel-classification/multi-label-classification/dataset'
+DIR_PATH = '/home/jolima/Documentos/multilabel-classification/multi-label-classification/'
+#DIR_PATH = '/home/jaimel/GoogleDrive/Doutorado/experimentos/Classificacao_Multilabel_Documentos_Cientificos/multilabel_code/'
 
 CURRENT_DIR = dirname(DIR_PATH)
 
@@ -9,6 +10,7 @@ KAGGLE_DATASET = "dataset/kaggle_dataset.csv"
 JSON_BINARY = "dataset/data_bin.json"
 BINARIES_DIR = "dataset/binaries"
 FILE_PATH = join(CURRENT_DIR, KAGGLE_DATASET)
+BINARIES_PATH = join(CURRENT_DIR, BINARIES_DIR)
 
 TERM_SIZE_STD = 8
 RAM_STD = 16

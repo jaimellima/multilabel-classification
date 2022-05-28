@@ -24,8 +24,8 @@ def get_binary_matrix(y):
     y_binary = np.asarray(y_binary, dtype=int)
     return y_binary
 
-print("Trying to acess CSV file in {}".format(cfg.KAGGLE_DATASET))
-dataset = pd.read_csv(cfg.KAGGLE_DATASET)
+print("Trying to acess CSV file in {}".format(cfg.FILE_PATH))
+dataset = pd.read_csv(cfg.FILE_PATH)
 # print(dataset)
 
 # preprocessing = Preprocessing(path_dataset=cfg.KAGGLE_DATASET, n_sample=cfg.SAMPLE,
@@ -37,7 +37,7 @@ dataset = pd.read_csv(cfg.KAGGLE_DATASET)
 
 # print(preprocessing.X_term_frequency.shape)
 
-preprocessing = Preprocessing(path_dataset=cfg.KAGGLE_DATASET, 
+preprocessing = Preprocessing(path_dataset=cfg.FILE_PATH, 
                               n_sample=cfg.SAMPLE,
                               X_columns=["TITLE", "ABSTRACT"], 
                               y_columns=cfg.Y_COLUMNS,
