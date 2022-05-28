@@ -37,6 +37,8 @@ dataset = pd.read_csv(cfg.FILE_PATH)
 
 # print(preprocessing.X_term_frequency.shape)
 
+print("Preprocessing {} documents".format(cfg.SAMPLE))
+
 preprocessing = Preprocessing(path_dataset=cfg.FILE_PATH, 
                               n_sample=cfg.SAMPLE,
                               X_columns=["TITLE", "ABSTRACT"], 
@@ -50,14 +52,15 @@ X_vectorized = preprocessing.vectorize(method="TF", X_preprocessed=X_preprocesse
 
 for term_size in range(cfg.MIN_TERM_SIZE, cfg.MAX_TERM_SIZE+1):
     d = dict()
-    print("Processing binary matrix for {} value".format(term_size))
+    print("Processing binary matrix for term size {}".format(term_size))
     X_bin = preprocessing.binarize(term_size=term_size, X_vectorized=X_vectorized)
     d[term_size] = X_bin.tolist()
-    file_name = cfg.BINARIES_DIR + "/" + str(term_size) + ".json"
+    file_name = cfg.BINARIES_PATH + "/" + str(term_size) + ".json"
     print("Saving {}".format(file_name))
     with open(file_name, 'w') as f:
        json.dump(d, f)
 
+print("Processo de binarização concluído ({} documentos)".format(cfg.SAMPLE))
 
 
 #LER O ARQUIVO PARA DICIONÁRIO
