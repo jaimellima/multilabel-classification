@@ -24,6 +24,7 @@ def get_binary_matrix(y):
     y_binary = np.asarray(y_binary, dtype=int)
     return y_binary
 
+print("Trying to acess CSV file in {}".format(cfg.KAGGLE_DATASET))
 dataset = pd.read_csv(cfg.KAGGLE_DATASET)
 # print(dataset)
 
