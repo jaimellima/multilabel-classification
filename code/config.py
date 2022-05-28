@@ -1,5 +1,5 @@
 
-from importlib.resources import path
+#from importlib.resources import path
 from os.path import dirname, join, abspath
 DIR_PATH = '/home/jolima/Documentos/multilabel-classification/multi-label-classification/dataset'
 
