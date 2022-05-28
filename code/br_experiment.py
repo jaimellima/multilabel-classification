@@ -39,6 +39,8 @@ X_vectorized = preprocessing.vectorize(method="TF", X_preprocessed=X_preprocesse
 #BINARY RELAVANCE EXPERIMENT
 y_binary = preprocessing.binary_y
 y_powerset = preprocessing.powerset_y
+
+#TODO:INSERIR VARIAÇÃO DO TERMÔMETRO
 X_bin = preprocessing.binarize(term_size=16, X_vectorized=X_vectorized)
 
 X_train, X_test, y_train, y_test = train_test_split(X_bin, y_powerset, test_size=0.33)

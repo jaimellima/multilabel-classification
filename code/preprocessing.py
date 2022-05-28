@@ -7,7 +7,7 @@ import pandas as pd
 from sklearn.feature_extraction.text import TfidfVectorizer
 from spacy.lang.en.stop_words import STOP_WORDS
 from sklearn.feature_extraction.text import CountVectorizer
-from numba import jit, cuda
+#from numba import jit, cuda
 from sklearn.feature_selection import chi2
 from sklearn.feature_selection import SelectKBest
 

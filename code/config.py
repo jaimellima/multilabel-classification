@@ -3,19 +3,24 @@ from importlib.resources import path
 from os.path import dirname, join, abspath
 DIR_PATH = '/home/jolima/Documentos/multilabel-classification/multi-label-classification/dataset'
 
-current_dir = dirname(DIR_PATH)
+CURRENT_DIR = dirname(DIR_PATH)
 
 KAGGLE_DATASET = "dataset/kaggle_dataset.csv"
-FILE_PATH = join(current_dir, KAGGLE_DATASET)
+JSON_BINARY = "dataset/data_bin.json"
+BINARIES_DIR = "dataset/binaries"
+FILE_PATH = join(CURRENT_DIR, KAGGLE_DATASET)
 
 TERM_SIZE_STD = 8
 RAM_STD = 16
+
+MIN_TERM_SIZE = 3
+MAX_TERM_SIZE = 64
 IGNORE_ZERO_WSD = False
 
 N_COMPONENTES_SVD = 100
 K_BEST_FS = 10
 
-SAMPLE = 500
+SAMPLE = 10000
 
 MAX_FEATURES_TFIDF = 500
 
