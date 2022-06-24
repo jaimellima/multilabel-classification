@@ -32,11 +32,6 @@ dataset = pd.read_csv(cfg.FILE_PATH)
 #      X_columns=["TITLE", "ABSTRACT"], y_columns=['Computer Science', 'Physics'],
 #      column_text_name="TEXT", nlp_model=en_core_web_lg.load(), stop_words=STOP_WORDS)
 
-# preprocessing.preprocessing()
-# preprocessing.term_frequency()
-
-# print(preprocessing.X_term_frequency.shape)
-
 print("Preprocessing {} documents".format(cfg.SAMPLE))
 
 preprocessing = Preprocessing(path_dataset=cfg.FILE_PATH, 
@@ -51,17 +46,38 @@ X_preprocessed = preprocessing.preprocessing()
 X_vectorized = preprocessing.vectorize(method="TF", X_preprocessed=X_preprocessed)
 
 for term_size in range(cfg.MIN_TERM_SIZE, cfg.MAX_TERM_SIZE+1):
-    d = dict()
+    df = pd.DataFrame(columns=["features", "labels"])
     print("Processing binary matrix for term size {}".format(term_size))
     X_bin = preprocessing.binarize(term_size=term_size, X_vectorized=X_vectorized)
-    d[term_size] = X_bin.tolist()
-    file_name = cfg.BINARIES_PATH + "/" + str(term_size) + ".json"
-    print("Saving {}".format(file_name))
-    with open(file_name, 'w') as f:
-       json.dump(d, f)
+    df["features"] = X_bin
+    df["labels"] = preprocessing.powerset_y
+    x_file_name = cfg.BINARIES_PATH + "/" + "kaggle_" + str(cfg.SAMPLE)+"/"+ "3.csv"
+    df.to_csv(x_file_name, index=False)
 
 print("Processo de binarização concluído ({} documentos)".format(cfg.SAMPLE))
 
+#     d_x = dict()
+#     d_yps = dict()
+#     d_ybr = dict()
+#     print("Processing binary matrix for term size {}".format(term_size))
+#     X_bin = preprocessing.binarize(term_size=term_size, X_vectorized=X_vectorized)
+#     d_x[term_size] = X_bin.tolist()
+#     d_yps[term_size] = preprocessing.powerset_y.tolist()
+#     d_ybr[term_size] = preprocessing.binary_y.tolist()
+#     x_file_name = cfg.BINARIES_PATH + "/" + "kaggle_" + str(cfg.SAMPLE)+"/"+ str(term_size) + ".json"
+#     print("Saving binary file {}".format(x_file_name))
+#     with open(x_file_name, 'w') as f:
+#        json.dump(d_x, f)
+#     yps_file_name = cfg.BINARIES_PATH + "/" + "kaggle_" + str(cfg.SAMPLE)+"/"+ str(term_size) + "_ps_labels.json"
+#     ybr_file_name = cfg.BINARIES_PATH + "/" + "kaggle_" + str(cfg.SAMPLE)+"/"+ str(term_size) + "_br_labels.json"
+#     with open(yps_file_name, 'w') as f:
+#        json.dump(d_yps, f)
+#     print("Saving label file {}".format(yps_file_name))
+#     with open(ybr_file_name, 'w') as f:
+#        json.dump(d_ybr, f)
+#     print("Saving label file {}".format(ybr_file_name))
+
+# print("Processo de binarização concluído ({} documentos)".format(cfg.SAMPLE))
 
 #LER O ARQUIVO PARA DICIONÁRIO
 #with open(cfg.JSON_BINARY) as f:

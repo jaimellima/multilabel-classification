@@ -1,13 +1,15 @@
 
 #from importlib.resources import path
 from os.path import dirname, join, abspath
-DIR_PATH = '/home/lcad/jaimel/multi-label-classification/'
+DIR_PATH = '/home/jolima/Documentos/multilabel-classification/'
 #DIR_PATH = '/home/jaimel/GoogleDrive/Doutorado/experimentos/Classificacao_Multilabel_Documentos_Cientificos/multilabel_code/'
 
 CURRENT_DIR = dirname(DIR_PATH)
 
 KAGGLE_DATASET = "dataset/kaggle_dataset.csv"
-JSON_BINARY = "dataset/data_bin.json"
+BINARY_CSV = "/home/jolima/Documentos/multilabel-classification/dataset/binaries/kaggle_10/3.csv"
+X_JSON_BINARY = "/home/jolima/Documentos/multilabel-classification/dataset/binaries/kaggle_100/3.json"
+Y_JSON_BINARY = "/home/jolima/Documentos/multilabel-classification/dataset/binaries/kaggle_100/3_ps_labels.json"
 BINARIES_DIR = "dataset/binaries"
 FILE_PATH = join(CURRENT_DIR, KAGGLE_DATASET)
 BINARIES_PATH = join(CURRENT_DIR, BINARIES_DIR)
@@ -16,13 +18,13 @@ TERM_SIZE_STD = 8
 RAM_STD = 16
 
 MIN_TERM_SIZE = 3
-MAX_TERM_SIZE = 64
+MAX_TERM_SIZE = 4
 IGNORE_ZERO_WSD = False
 
 N_COMPONENTES_SVD = 100
 K_BEST_FS = 10
 
-SAMPLE = 10000
+SAMPLE = 10
 
 MAX_FEATURES_TFIDF = 500
 

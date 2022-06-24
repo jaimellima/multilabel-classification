@@ -9,5 +9,6 @@ class Classifier:
     def wisard(self, X_train, y_train, X_test, ram, ignoreZero=False):
         wisard = wsd.Wisard(ram, ignoreZero=ignoreZero)
         wisard.train(X_train, y_train)
-        y_pred = np.array(wisard.classify(X_test))
+        y_pred = wisard.classify(X_test)
         return y_pred
+
