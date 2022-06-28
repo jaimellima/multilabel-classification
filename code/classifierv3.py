@@ -233,7 +233,7 @@ if __name__=="__main__":
     #for vector in X3:
     for vector in X3:
         v = prep.binarize(vector, term_size,  np.min(vector), np.max(vector), mean=np.mean(vector))
-        matriz_bin.append(v)
+        matriz_bin.append(v)accuracy_score
         #matriz_bin.append(v)
     #matriz_bin = np.array(matriz_bin)
 
