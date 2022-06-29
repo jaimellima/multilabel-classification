@@ -50,7 +50,7 @@ for term_size in range(cfg.MIN_TERM_SIZE, cfg.MAX_TERM_SIZE+1):
     print("Processing binary matrix for term size {}".format(term_size))
     X_bin = preprocessing.binarize(term_size=term_size, X_vectorized=X_vectorized)
     df_X_bin = pd.DataFrame(X_bin)
-    x_file_name = cfg.BINARIES_PATH + "/" + "kaggle_" + str(cfg.SAMPLE)+"/"+str(term_size)+ "_features.csv"
+    x_file_name = cfg.BINARIES_PATH + "/" + "kaggle_" + str(cfg.SAMPLE)+"/"+str(term_size)+ "_documents.csv"
     df_X_bin.to_csv(x_file_name, index=False)
 
 y_file_name = cfg.BINARIES_PATH + "/" + "kaggle_" + str(cfg.SAMPLE)+"/labels.json"
@@ -59,7 +59,7 @@ d_yps["labels"] = preprocessing.powerset_y.tolist()
 with open(y_file_name, 'w') as f:
     json.dump(d_yps, f)
 
-print("Processo de binarização concluído ({} documentos)".format(cfg.SAMPLE))
+print("Done: {} documents)".format(cfg.SAMPLE))
 
 #     d_x = dict()
 #     d_yps = dict()

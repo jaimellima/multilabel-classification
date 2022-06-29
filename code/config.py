@@ -13,12 +13,17 @@ Y_JSON_BINARY = "/home/jolima/Documentos/multilabel-classification/dataset/binar
 BINARIES_DIR = "dataset/binaries"
 FILE_PATH = join(CURRENT_DIR, KAGGLE_DATASET)
 BINARIES_PATH = join(CURRENT_DIR, BINARIES_DIR)
+KAGGLE_100 = "/home/jolima/Documentos/multilabel-classification/dataset/binaries/kaggle_100/"
 
 TERM_SIZE_STD = 8
 RAM_STD = 16
 
 MIN_TERM_SIZE = 3
 MAX_TERM_SIZE = 4
+
+MIN_RAM_SIZE = 3
+MAX_RAM_SIZE = 4
+
 IGNORE_ZERO_WSD = False
 
 N_COMPONENTES_SVD = 100
