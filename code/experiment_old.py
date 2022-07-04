@@ -15,15 +15,9 @@ from threading import Thread
 
 class Experiment(Thread):
    def __init__(self):
-      Thread.__init__(self)
       self.__today = date.today()
-      self.__experiment = {}
 
-   def run(self):
-            
-
-
-
+experiment = {}
 for seed in range(0, cfg.SEEDS):
    for ram in range(cfg.MIN_RAM_SIZE, cfg.MAX_RAM_SIZE+1):
       for term_size in range(cfg.MIN_TERM_SIZE, cfg.MAX_TERM_SIZE+1):

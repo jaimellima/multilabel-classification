@@ -6,14 +6,15 @@ DIR_PATH = '/home/jolima/Documentos/multilabel-classification/'
 
 CURRENT_DIR = dirname(DIR_PATH)
 
-KAGGLE_DATASET = "dataset/kaggle_dataset.csv"
-BINARY_CSV = "/home/jolima/Documentos/multilabel-classification/dataset/binaries/kaggle_10/3.csv"
-X_JSON_BINARY = "/home/jolima/Documentos/multilabel-classification/dataset/binaries/kaggle_100/3.json"
-Y_JSON_BINARY = "/home/jolima/Documentos/multilabel-classification/dataset/binaries/kaggle_100/3_ps_labels.json"
-BINARIES_DIR = "dataset/binaries"
+KAGGLE_DATASET = "/media/jolima/DADOS/kaggle_multilabel/kaggle_dataset.csv"
+BINARY_CSV = "/media/jolima/DADOS/kaggle_multilabel/binaries/kaggle_10/3.csv"
+X_JSON_BINARY = "/media/jolima/DADOS/kaggle_multilabel/binaries/kaggle_100/3.json"
+Y_JSON_BINARY = "/media/jolima/DADOS/kaggle_multilabel/binaries/kaggle_100/3_ps_labels.json"
+BINARIES_DIR = "/media/jolima/DADOS/kaggle_multilabel/binaries"
 FILE_PATH = join(CURRENT_DIR, KAGGLE_DATASET)
 BINARIES_PATH = join(CURRENT_DIR, BINARIES_DIR)
-KAGGLE_100 = "/home/jolima/Documentos/multilabel-classification/dataset/binaries/kaggle_100/"
+KAGGLE_100 = "/media/jolima/DADOS/kaggle_multilabel/binaries/kaggle_100/"
+KAGGLE_1000 = "/media/jolima/DADOS/kaggle_multilabel/binaries/kaggle_1000/"
 
 TERM_SIZE_STD = 8
 RAM_STD = 16
