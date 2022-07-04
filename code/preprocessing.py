@@ -78,6 +78,7 @@ class Preprocessing:
         print("Resetting indexes...")
         vetorizer = TfidfVectorizer()
         X_tfidf = vetorizer.fit_transform(documents)
+        vetorizer.feature_names_in_
         X_tfidf_dense = X_tfidf.todense()
         pd.DataFrame(X_tfidf_dense).to_csv("tf_idf.csv")
         return X_tfidf_dense
