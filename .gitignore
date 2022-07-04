@@ -6,6 +6,9 @@ __pycache__/
 #json
 *.json
 
+#csv
+*.csv
+
 #matrizes esparsas
 *.npz
 
@@ -134,5 +137,3 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
-#csv
-*.csv
