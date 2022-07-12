@@ -21,7 +21,7 @@ class Experiment(Thread):
       self.__ram = ram
 
    def experiment(self, seed, ram, term_size):
-      print("Term size: {}".format(term_size))
+      print("Therm size: {}".format(term_size))
       fname_df_features = "{}{}_documents.csv".format(cfg.KAGGLE_100, term_size)
       print(fname_df_features)
       df_features = pd.read_csv(fname_df_features)
@@ -49,7 +49,7 @@ class Experiment(Thread):
             print("Starting ram training and test experiment")
             self.experiment(seed, self.__ram, term_size)
       
-      experiment_file_name = "{}ram_{}_exp.json".format(cfg.KAGGLE_100, ram)
+      experiment_file_name = "{}ram_{}_exp.json".format(cfg.KAGGLE_100, self.__ram)
       print("Saving label file {}".format(experiment_file_name))
       with open(experiment_file_name, 'w') as f:
          json.dump(self.__experiment, f)

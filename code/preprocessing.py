@@ -120,12 +120,15 @@ class Preprocessing:
         return np.asarray([X[:, :, i].ravel(order=order) for i in range(X.shape[2])])
 
     def binarize(self, X_vectorized, term_size, min_value=0, max_value=1):
-        #vector_bin = self.flatten(self.thermometerEncoderMinMax(vector, term_size, min_value, max_value)
-        mean = np.mean(X_vectorized)
+        #mean = np.mean(X_vectorized)
+        min_value = np.min(X_vectorized)
+        max_value = np.max(X_vectorized)
         bin = []
         for vector in X_vectorized:
-            vector_bin = self.flatten(self.thermometerEncoder(vector, mean))
-            bin.append(vector_bin)
+            #vector_bin = self.flatten(self.thermometerEncoder(vector, mean))
+            vector_bin = self.flatten(self.thermometerEncoderMinMax(vector, term_size, min_value, max_value))
+            #bin.append(vector_bin)
+            bin.append(vector_bin[0])
         return np.array(bin)
 
     #@jit(target ="cuda")

@@ -47,13 +47,13 @@ X_vectorized = preprocessing.vectorize(method="TF", X_preprocessed=X_preprocesse
 
 for term_size in range(cfg.MIN_TERM_SIZE, cfg.MAX_TERM_SIZE+1):
     #df_X_bin = pd.DataFrame()
-    print("Processing binary matrix for term size {}".format(term_size))
+    print("Processing binary matrix for thermometer size {}".format(term_size))
     X_bin = preprocessing.binarize(term_size=term_size, X_vectorized=X_vectorized)
     df_X_bin = pd.DataFrame(X_bin)
-    x_file_name = cfg.BINARIES_PATH + "/" + "kaggle_" + str(cfg.SAMPLE)+"/"+str(term_size)+ "_documents.csv"
+    x_file_name = cfg.BINARIES_PATH + "/" + "kaggle_" + str(cfg.SAMPLE)+"_2/"+str(term_size)+ "_documents.csv"
     df_X_bin.to_csv(x_file_name, index=False)
 
-y_file_name = cfg.BINARIES_PATH + "/" + "kaggle_" + str(cfg.SAMPLE)+"/labels.json"
+y_file_name = cfg.BINARIES_PATH + "/" + "kaggle_" + str(cfg.SAMPLE)+"_2/labels.json"
 d_yps = dict()
 d_yps["labels"] = preprocessing.powerset_y.tolist()
 with open(y_file_name, 'w') as f:

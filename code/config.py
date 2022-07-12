@@ -13,19 +13,19 @@ Y_JSON_BINARY = "/media/jolima/DADOS/kaggle_multilabel/binaries/kaggle_100/3_ps_
 BINARIES_DIR = "/media/jolima/DADOS/kaggle_multilabel/binaries"
 FILE_PATH = join(CURRENT_DIR, KAGGLE_DATASET)
 BINARIES_PATH = join(CURRENT_DIR, BINARIES_DIR)
-KAGGLE_100 = "/media/jolima/DADOS/kaggle_multilabel/binaries/kaggle_100/"
+KAGGLE_100 = "/media/jolima/DADOS/kaggle_multilabel/binaries/kaggle_100_2/"
 KAGGLE_1000 = "/media/jolima/DADOS/kaggle_multilabel/binaries/kaggle_1000/"
 
 TERM_SIZE_STD = 8
 RAM_STD = 16
 
 MIN_TERM_SIZE = 3
-MAX_TERM_SIZE = 64
+MAX_TERM_SIZE = 32
 
-MIN_RAM_SIZE = 3
-MAX_RAM_SIZE = 64
+MIN_RAM_SIZE = 8
+MAX_RAM_SIZE = 16
 
-SEEDS = 5
+SEEDS = 2
 
 IGNORE_ZERO_WSD = False
 
