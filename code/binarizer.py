@@ -1,28 +1,17 @@
 
-import pandas as pd
-import numpy as np
-import config as cfg
-import en_core_web_lg
 import json
 
-from preprocessing import Preprocessing
-from classifier import Classifier
-from spacy.lang.en.stop_words import STOP_WORDS
-from sklearn.metrics import accuracy_score
-from sklearn.metrics import precision_score
-from sklearn.metrics import recall_score
+import en_core_web_lg
+import numpy as np
+import pandas as pd
+from sklearn.metrics import (accuracy_score, hamming_loss, precision_score,
+                             recall_score)
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import hamming_loss
+from spacy.lang.en.stop_words import STOP_WORDS
 
-def get_binary_matrix(y):
-    y_binary = []
-    for label in y:
-        l = []
-        for i in range(0, len(label)):
-            l.append(label[i])
-        y_binary.append(l)
-    y_binary = np.asarray(y_binary, dtype=int)
-    return y_binary
+import config as cfg
+from classifier import Classifier
+from preprocessing import Preprocessing
 
 print("Trying to acess CSV file in {}".format(cfg.FILE_PATH))
 dataset = pd.read_csv(cfg.FILE_PATH)
@@ -41,6 +30,7 @@ preprocessing = Preprocessing(path_dataset=cfg.FILE_PATH,
                               column_text_name="TEXT", 
                               nlp_model=en_core_web_lg.load(), 
                               stop_words=STOP_WORDS)
+
 
 X_preprocessed = preprocessing.preprocessing()
 X_vectorized = preprocessing.vectorize(method="TF", X_preprocessed=X_preprocessed)

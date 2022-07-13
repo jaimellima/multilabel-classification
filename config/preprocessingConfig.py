@@ -1,6 +1,6 @@
-from configuration import Configuration
+from .configuration import Configuration
 
-class PreprocessingConfiguration(Configuration):
+class PreprocessingConfig(Configuration):
     def __init__(self):
         super().__init__()
     

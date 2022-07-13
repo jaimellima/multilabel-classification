@@ -1,7 +1,7 @@
 #MOVER PARA ARQUIVO DE CONFIGURAÇÃO, CRIANDO FUNÇÃO PARA CARREGAR ARQUIVO
 conf = {
     #raw file to be preprocessed
-    "ORIGIN_CSV_FILE": "./dataset/train.csv",
+    "ORIGIN_CSV_FILE": "./dataset/kaggle_dataset.csv",
 
     #directory to save preprocessed files.
     "DEST_DIR_PREPROCESSED": "/home/jolima/Documentos/multilabel-classification/",
@@ -34,7 +34,6 @@ conf = {
     "IGNORE_ZERO_WSD": False,
     
 }
-
 
 class Configuration():
     def __init__(self):
