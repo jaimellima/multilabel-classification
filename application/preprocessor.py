@@ -1,0 +1,4 @@
+from config.preprocessingConfig import PreprocessingConfiguration
+from services.preprocessing.preprocessing import Preprocessing
+
+preprocConfig = PreprocessingConfiguration()
