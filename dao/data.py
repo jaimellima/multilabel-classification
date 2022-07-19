@@ -54,10 +54,12 @@ if __name__=="__main__":
     cfg.sample = 10
     print(cfg.origin_csv_file)
     csv = Csv(cfg.origin_csv_file, cfg.x_columns, cfg.y_columns)
-    documents = csv.get_text_from_csv(n_sample=5000)
+    documents = csv.get_text_from_csv(n_sample=5)
 
     for doc in documents:
         Json.save_json(doc, cfg.dest_dir_text,str(doc["document_id"]),".text")
+
+    
         
     
 

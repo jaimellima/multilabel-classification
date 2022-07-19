@@ -6,7 +6,7 @@ from document import TextDocument, TokenizedDocument, VectorizedDocument, Binari
 import numpy as np
 
 
-class Dataset():
+class Dataset:
     def __init__(self):
         self._documents = []
         

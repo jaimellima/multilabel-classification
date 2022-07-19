@@ -53,6 +53,16 @@ class TextDocument(Document):
         document_dict["labels"] = self.labels
         return document_dict
 
+    def to_json(self, dir, file_type=".text"):
+        """save files in json or other chosen format (eg .text, .token, .vect, .binary)
+
+        Args:
+            dir (str): directory where the files will be saved
+            file_type (str, optional): types for the files. Defaults to ".json".
+        """
+        Json.save_json(self.to_dict(), dir, file_name=str(self.document_id), file_type=file_type)
+        print("Saving document {} file in {} format".format(self.document_id, file_type))
+
 
 class TokenizedDocument(Document):
     def __init__(self, document_id, tokens, labels=None):
@@ -66,6 +76,15 @@ class TokenizedDocument(Document):
     def to_dict(self):
         pass
 
+    def to_json(self, dir, file_type=".token"):
+        """save files in json or other chosen format (eg .text, .token, .vect, .binary)
+
+        Args:
+            dir (str): directory where the files will be saved
+            file_type (str, optional): types for the files. Defaults to ".json".
+        """
+        Json.save_json(self.to_dict(), dir, file_name=str(self.document_id), file_type=file_type)
+        print("Saving document {} file in {} format".format(self.document_id, file_type))
 
 class VectorizedDocument(Document):
     def __init__(self, document_id, vector, labels=None):
@@ -79,6 +98,15 @@ class VectorizedDocument(Document):
     def to_dict(self):
         pass
 
+    def to_json(self, dir, file_type=".vect"):
+        """save files in json or other chosen format (eg .text, .token, .vect, .binary)
+
+        Args:
+            dir (str): directory where the files will be saved
+            file_type (str, optional): types for the files. Defaults to ".json".
+        """
+        Json.save_json(self.to_dict(), dir, file_name=str(self.document_id), file_type=file_type)
+        print("Saving document {} file in {} format".format(self.document_id, file_type))
 
 class BinarizedDocument(Document):
     def __init__(self, document_id, binary_vector, labels=None):
@@ -91,6 +119,16 @@ class BinarizedDocument(Document):
 
     def to_dict(self):
         pass
+
+    def to_json(self, dir, file_type=".binary"):
+        """save files in json or other chosen format (eg .text, .token, .vect, .binary)
+
+        Args:
+            dir (str): directory where the files will be saved
+            file_type (str, optional): types for the files. Defaults to ".json".
+        """
+        Json.save_json(self.to_dict(), dir, file_name=str(self.document_id), file_type=file_type)
+        print("Saving document {} file in {} format".format(self.document_id, file_type))
 
 
 if __name__=="__main__":

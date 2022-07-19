@@ -1,16 +1,16 @@
 #TODO: MOVER PARA ARQUIVO DE CONFIGURAÇÃO, CRIANDO FUNÇÃO PARA CARREGAR ARQUIVO
 conf_dict = {
     #raw file to be preprocessed
-    "ORIGIN_CSV_FILE": "/home/jaimel/GoogleDrive/Doutorado/experimentos/Classificacao_Multilabel_Documentos_Cientificos/kaggle/train.csv",
+    "ORIGIN_CSV_FILE": "/media/jolima/DADOS/kaggle_multilabel/kaggle_dataset.csv",
 
     #directory to save preprocessed files.
-    "DIR_TOKENIZED_FILES": "/home/jaimel/GoogleDrive/Doutorado/experimentos/Classificacao_Multilabel_Documentos_Cientificos/multilabel_code/corpus/preprocessed/",
+    "DIR_TOKENIZED_FILES": "/media/jolima/DADOS/kaggle_multilabel/",
 
     "DIR_BINARIZED_FILES": "/home/jaimel/GoogleDrive/Doutorado/experimentos/Classificacao_Multilabel_Documentos_Cientificos/multilabel_code/corpus/binarized/",
 
     "DIR_VECTORIZED_FILES": "/home/jaimel/GoogleDrive/Doutorado/experimentos/Classificacao_Multilabel_Documentos_Cientificos/multilabel_code/corpus/vectorized/",
 
-    "DIR_TEXT_FILES": "/home/jaimel/GoogleDrive/Doutorado/experimentos/Classificacao_Multilabel_Documentos_Cientificos/multilabel_code/corpus/raw/",
+    "DIR_TEXT_FILES": "/media/jolima/DADOS/kaggle_multilabel/",
 
     #standard thermometer value
     "THERM_SIZE_STD": 8,
