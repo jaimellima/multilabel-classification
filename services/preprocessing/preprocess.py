@@ -6,12 +6,12 @@ import pandas as pd
 import numpy as np
 
 
-class Preprocessing:
+class Preprocess:
     def __init__(self):
         self._dataset = None
         self._X = None
         self._y = None
-        self._stopwords = StopwordsStrategy
+        self._stopwords = None
 
     def set_dataset(self, origin_csv_file, n_sample):
         self._dataset = pd.read_csv(origin_csv_file)

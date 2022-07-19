@@ -1,43 +1,17 @@
-#MOVER PARA ARQUIVO DE CONFIGURAÇÃO, CRIANDO FUNÇÃO PARA CARREGAR ARQUIVO
-conf = {
-    #raw file to be preprocessed
-    "ORIGIN_CSV_FILE": "./dataset/kaggle_dataset.csv",
+import sys
+sys.path.append('./')
 
-    #directory to save preprocessed files.
-    "DEST_DIR_PREPROCESSED": "/home/jolima/Documentos/multilabel-classification/",
-
-    #standard thermometer value
-    "THERM_SIZE_STD": 8,
-
-    #sample size
-    "SAMPLE": 100,
-
-    #columns to be processed
-    "X_COLUMNS": ["TITLE", "ABSTRACT"],
-
-    #label columns
-    "Y_COLUMNS":["Computer Science"],
-
-    #vectorization method
-    #"TF" - Term Frequency
-    #"TFIDF" - Term Frequency Inverse Document Frequency
-    "VECTORIZATION_METHOD": "TF",
-
-    "SPACY_MODEL": "en_core_web_lg",
-
-    "RAM_STD": 16,
-    "MIN_TERM_SIZE": 3,
-    "MAX_TERM_SIZE": 32,
-    "MIN_RAM_SIZE": 8,
-    "MAX_RAM_SIZE": 16,
-    "SEEDS": 2,
-    "IGNORE_ZERO_WSD": False,
-    
-}
+from .conf_dict import conf_dict
+from abc import ABC
 
 class Configuration():
+    # this class loads the configuration file and creates 
+    # the generic methods to be used by the configuration 
+    # classes for dataset, preprocessing, binarization 
+    # and classification.
+
     def __init__(self):
-        self._config = conf
+        self._config = conf_dict
 
     def get_property(self, property_name):
         return self._config.get(property_name)
@@ -45,3 +19,67 @@ class Configuration():
     def set_property(self, property_name, value):
         self._config[property_name] = value
 
+class ConfigurationSettings(Configuration):
+    def __init__(self):
+        super().__init__()
+    
+    @property
+    def origin_csv_file(self):
+        return self.get_property("ORIGIN_CSV_FILE")
+    
+    @origin_csv_file.setter
+    def origin_csv_file(self, value):
+        self.set_property("ORIGIN_CSV_FILE", value)
+
+    @property
+    def dest_dir_preprocessed(self):
+        return self.get_property("DEST_DIR_PREPROCESSED")
+
+    @property
+    def dest_dir_text(self):
+        return self.get_property("DIR_TEXT_FILES")
+
+    @property
+    def x_columns(self):
+        return self.get_property("X_COLUMNS")
+    
+    @x_columns.setter
+    def x_columns(self, list_columns):
+        self.set_property("X_COLUMNS", list_columns)
+
+    @property
+    def y_columns(self):
+        return self.get_property("Y_COLUMNS")
+    
+    @y_columns.setter
+    def y_columns(self, list_columns):
+        self.set_property("Y_COLUMNS", list_columns)
+
+    @property
+    def sample(self):
+        return self.get_property("SAMPLE")
+    
+    @sample.setter
+    def sample(self, value):
+        self.set_property("SAMPLE", value)
+
+    @property
+    def vectorization_strategy(self):
+        return self.get_property("VECTORIZATION_STRATEGY")
+
+    @vectorization_strategy.setter
+    def vectorization_strategy(self, value):
+        self.set_property("VECTORIZATION_STRATEGY", value)
+
+    @property
+    def spacy_method(self):
+        return self.get_property("SPACY_MODEL")
+
+    @spacy_method.setter
+    def spacy_method(self, value):
+        self.set_property("SPACY_MODEL", value)
+
+
+if __name__=="__main__":
+    config = Configuration()
+    print(config.get_property("SAMPLE"))
